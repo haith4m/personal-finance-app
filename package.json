@@ -19,10 +19,12 @@
     "@mui/material": "^6.4.4",
     "@supabase/supabase-js": "^2.48.1",
     "formik": "^2.4.6",
+    "papaparse": "^5.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "2.5.2",
     "react-router": "^7.1.5",
+    "recharts": "^3.7.0",
     "yup": "^1.6.1"
   },
   "devDependencies": {
