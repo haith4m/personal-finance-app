@@ -5,10 +5,15 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
 const validationSchema = yup.object({
+  name: yup
+    .string("Enter your name")
+    .required("Name is required"),
+
   email: yup
     .string("Enter your email")
     .email("Enter a valid email")
     .required("Email is required"),
+
   password: yup
     .string("Enter your password")
     .min(8, "Password should be of minimum 8 characters length")
@@ -18,17 +23,32 @@ const validationSchema = yup.object({
 const AccountForm = ({ onSubmit }) => {
   const formik = useFormik({
     initialValues: {
+      name: "",
       email: "",
       password: "",
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      await onSubmit(values.email, values.password);
+      await onSubmit(values.name, values.email, values.password);
     },
   });
 
   return (
     <form onSubmit={formik.handleSubmit}>
+      {/* 🔥 NAME FIELD */}
+      <TextField
+        fullWidth
+        id="name"
+        name="name"
+        label="Name"
+        value={formik.values.name}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched.name && Boolean(formik.errors.name)}
+        helperText={formik.touched.name && formik.errors.name}
+        style={{ margin: "1rem" }}
+      />
+
       <TextField
         fullWidth
         id="email"
@@ -39,10 +59,9 @@ const AccountForm = ({ onSubmit }) => {
         onBlur={formik.handleBlur}
         error={formik.touched.email && Boolean(formik.errors.email)}
         helperText={formik.touched.email && formik.errors.email}
-        style={{
-          margin: "1rem",
-        }}
+        style={{ margin: "1rem" }}
       />
+
       <TextField
         fullWidth
         id="password"
@@ -54,19 +73,16 @@ const AccountForm = ({ onSubmit }) => {
         onBlur={formik.handleBlur}
         error={formik.touched.password && Boolean(formik.errors.password)}
         helperText={formik.touched.password && formik.errors.password}
-        style={{
-          margin: "1rem",
-        }}
+        style={{ margin: "1rem" }}
       />
+
       <Button
         color="primary"
         variant="contained"
         fullWidth
         type="submit"
         size="small"
-        style={{
-          margin: "1rem",
-        }}
+        style={{ margin: "1rem" }}
       >
         Submit
       </Button>
