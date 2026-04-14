@@ -8,29 +8,20 @@ import supabase from "../../utils/supabase";
 const SignUp = () => {
   const navigate = useNavigate();
 
-  const signUp = async (name, email, password) => {
-
-    const { data, error } = await supabase.auth.signUp({
+  const signUp = async (email, password) => {
+    const result = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: {
-          name: name
-        }
-      }
     });
 
-    if (error) {
-      console.error(error);
-      toast.error(error.message);
-      return;
+    if (result.data.user?.identities?.length === 0) {
+      toast.error("Account cannot be created. Please, try again later.");
+    } else {
+      toast.success(
+        "Welcome and please check your inbox to confirm your account!"
+      );
+      navigate("/");
     }
-
-    toast.success(
-      "Welcome! Please check your inbox to confirm your account."
-    );
-
-    navigate("/");
   };
 
   return (

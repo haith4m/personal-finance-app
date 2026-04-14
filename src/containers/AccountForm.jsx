@@ -5,10 +5,6 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
 const validationSchema = yup.object({
-  name: yup
-    .string("Enter your name")
-    .min(2, "Name should be at least 2 characters")
-    .required("Name is required"),
   email: yup
     .string("Enter your email")
     .email("Enter a valid email")
@@ -22,35 +18,17 @@ const validationSchema = yup.object({
 const AccountForm = ({ onSubmit }) => {
   const formik = useFormik({
     initialValues: {
-      name:"",
       email: "",
       password: "",
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      await onSubmit(values.names,values.email, values.password);
+      await onSubmit(values.email, values.password);
     },
   });
 
   return (
     <form onSubmit={formik.handleSubmit}>
-
-      <TextField
-	fullWidth
-        id="name"
-        name="name"
-	label="Full Name"
-        value={formik.values.name}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.name && Boolean(formik.errors.name)}
-        helperText={formik.touched.name && formik.errors.name}
-        style={{
-          margin: "1rem",
-         }}
-       />
-
-      
       <TextField
         fullWidth
         id="email"

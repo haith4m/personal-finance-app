@@ -4,15 +4,12 @@ import { createRoot } from "react-dom/client";
 import { Toaster } from "react-hot-toast";
 
 import "./index.css";
+import App from "./App.jsx";
 import AppBar from "./containers/AppBar";
 import AuthProvider from "./context/AuthContext.jsx";
-
+import githubLogo from "/github.svg";
 import SignIn from "./pages/auth/SignIn.jsx";
 import SignUp from "./pages/auth/SignUp.jsx";
-
-import Dashboard from "./pages/Dashboard.jsx";
-import AddExpense from "./pages/AddExpense.jsx";
-import Reports from "./pages/Reports.jsx";
 
 createRoot(document.getElementById("root")).render(
   <div
@@ -35,9 +32,7 @@ createRoot(document.getElementById("root")).render(
           <AppBar />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/add-expense" element={<AddExpense />} />
-              <Route path="/reports" element={<Reports />} />
+              <Route index path="/" element={<App />} />
               <Route index path="/auth/sign-in" element={<SignIn />} />
               <Route index path="/auth/sign-up" element={<SignUp />} />
             </Routes>
@@ -53,7 +48,13 @@ createRoot(document.getElementById("root")).render(
         textAlign: "center",
       }}
     >
-      Personal Finance Manager
+      Template Project available on{" "}
+      <a
+        href="https://github.com/juancarlosjr97/react-vite-supabase-vercel"
+        target="_blank"
+      >
+        <img src={githubLogo} className="logo github" alt="GitHub logo" />
+      </a>
     </footer>
   </div>
 );
