@@ -190,6 +190,7 @@ body.light .card {
 .transaction {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 10px 0;
   border-bottom: 1px solid #334155;
 }
@@ -197,6 +198,80 @@ body.light .card {
 .transaction p {
   margin: 0;
   color: #94a3b8;
+}
+
+.tx-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tx-amount {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tx-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-edit,
+.btn-delete,
+.btn-save,
+.btn-cancel {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-edit {
+  background: #334155;
+  color: #94a3b8;
+}
+
+.btn-edit:hover {
+  background: #475569;
+  color: white;
+}
+
+.btn-delete {
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #ef444460;
+}
+
+.btn-delete:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-save {
+  background: #22c55e;
+  color: white;
+}
+
+.btn-save:hover {
+  background: #16a34a;
+}
+
+.btn-cancel {
+  background: #334155;
+  color: #94a3b8;
+}
+
+.btn-cancel:hover {
+  background: #475569;
+  color: white;
+}
+
+.transaction-editing {
+  padding: 12px 0;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 /* ===== ADD EXPENSE ===== */

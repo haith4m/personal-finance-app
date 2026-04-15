@@ -3,6 +3,7 @@ import supabase from "../utils/supabase";
 import BudgetForm from "./BudgetForm";
 import AddExpense from "../pages/AddExpense";
 import CategoriesList from "./CategoriesList";
+import TransactionsList from "./TransactionsList";
 
 import {
   PieChart,
@@ -237,16 +238,7 @@ export default function Dashboard() {
       {/* TRANSACTIONS */}
       <div className="card">
         <h3>Transactions</h3>
-
-        {transactions.map((t, i) => (
-          <div key={i} className="transaction">
-            <div>
-              <strong>{t.description}</strong>
-              <p>{t.categories?.name}</p>
-            </div>
-            <span>£{t.amount}</span>
-          </div>
-        ))}
+        <TransactionsList selectedMonth={selectedMonth} onRefresh={fetchData} />
       </div>
 
     </div>
