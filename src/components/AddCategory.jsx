@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 import supabase from "../utils/supabase";
 
-const AddCategory = () => {
+const AddCategory = ({ refresh }) => {
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -22,6 +22,7 @@ const AddCategory = () => {
       } else {
         toast.success("Category added");
         resetForm();
+        if (refresh) refresh();
       }
     },
   });

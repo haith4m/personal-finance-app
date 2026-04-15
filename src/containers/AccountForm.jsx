@@ -35,7 +35,6 @@ const AccountForm = ({ onSubmit }) => {
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      {/* 🔥 NAME FIELD */}
       <TextField
         fullWidth
         id="name"

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import supabase from "../utils/supabase";
+import { getCategoryMeta } from "../utils/categoryIcons";
 
 export default function TransactionsList({ transactions = [], onRefresh }) {
   const [categories, setCategories] = useState([]);
@@ -103,9 +104,15 @@ export default function TransactionsList({ transactions = [], onRefresh }) {
           </div>
         ) : (
           <div key={t.id} className="transaction">
-            <div>
-              <strong>{t.description || "—"}</strong>
-              <p>{t.categories?.name || "No category"}</p>
+            <div className="tx-left">
+              {(() => {
+                const { icon: Icon, color } = getCategoryMeta(t.categories?.name || "");
+                return <Icon style={{ fontSize: 20, color, flexShrink: 0 }} />;
+              })()}
+              <div>
+                <strong>{t.description || "—"}</strong>
+                <p>{t.categories?.name || "No category"}</p>
+              </div>
             </div>
             <div className="tx-right">
               <span className="tx-amount">£{t.amount}</span>

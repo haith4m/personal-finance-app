@@ -17,7 +17,7 @@ const validationSchema = Yup.object({
     .required("Category is required"),
 });
 
-export default function AddExpense({ compact }) {
+export default function AddExpense({ compact, onRefresh }) {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
 
@@ -73,7 +73,11 @@ export default function AddExpense({ compact }) {
             categoryId: "",
           },
         });
-        navigate("/");
+        if (onRefresh) {
+          onRefresh();
+        } else {
+          navigate("/");
+        }
       }
     },
   });

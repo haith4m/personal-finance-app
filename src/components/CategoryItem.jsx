@@ -2,8 +2,11 @@ import { memo } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import toast from "react-hot-toast";
 import supabase from "../utils/supabase";
+import { getCategoryMeta } from "../utils/categoryIcons";
 
 const CategoryItem = ({ category, refresh }) => {
+  const { icon: Icon, color } = getCategoryMeta(category.name);
+
   const deleteCategory = async () => {
     const { error } = await supabase
       .from("categories")
@@ -19,21 +22,17 @@ const CategoryItem = ({ category, refresh }) => {
   };
 
   return (
-  <div className="category-item">
+    <div className="category-item">
+      <Icon style={{ fontSize: 16, color }} />
+      <span>{category.name}</span>
 
-    <span>{category.name}</span>
-
-    {!category.is_default && (
-      <button
-        className="delete-btn"
-        onClick={deleteCategory}
-      >
-        <DeleteIcon fontSize="small" />
-      </button>
-    )}
-
-  </div>
-);
+      {!category.is_default && (
+        <button className="delete-btn" onClick={deleteCategory}>
+          <DeleteIcon fontSize="small" />
+        </button>
+      )}
+    </div>
+  );
 };
 
 export default memo(CategoryItem);

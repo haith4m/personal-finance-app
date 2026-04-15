@@ -1,3 +1,37 @@
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered fade-in for every section in the dashboard */
+.dashboard > * {
+  animation: fadeInUp 0.45s ease both;
+}
+.dashboard > *:nth-child(1) { animation-delay: 0ms; }
+.dashboard > *:nth-child(2) { animation-delay: 70ms; }
+.dashboard > *:nth-child(3) { animation-delay: 140ms; }
+.dashboard > *:nth-child(4) { animation-delay: 210ms; }
+.dashboard > *:nth-child(5) { animation-delay: 280ms; }
+.dashboard > *:nth-child(6) { animation-delay: 350ms; }
+.dashboard > *:nth-child(7) { animation-delay: 420ms; }
+.dashboard > *:nth-child(8) { animation-delay: 490ms; }
+.dashboard > *:nth-child(9) { animation-delay: 560ms; }
+
+/* Honour user preference — kill all motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ===== GLOBAL ===== */
 body.dark {
   background: #0f172a;
@@ -126,6 +160,27 @@ body.light .card {
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
 }
 
+/* ===== CHART LEGEND ===== */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+body.light .chart-legend-item {
+  color: #475569;
+}
+
 /* ===== CHART ===== */
 .chart-container {
   width: 100%;
@@ -198,6 +253,12 @@ body.light .card {
 .transaction p {
   margin: 0;
   color: #94a3b8;
+}
+
+.tx-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .tx-right {
@@ -352,16 +413,12 @@ body.light .expense-form select {
   display: flex;
   align-items: center;
   gap: 6px;
-
   padding: 6px 10px;
   border-radius: 20px;
   font-size: 13px;
-
   background: #334155;
-  transition: 0.2s;
 }
 
-/* HOVER */
 .category-item:hover {
   background: #475569;
 }
@@ -378,7 +435,7 @@ body.light .expense-form select {
 }
 
 .delete-btn:hover {
-  color: #ef4444; /* 🔥 red on hover */
+  color: #ef4444;
 }
 
 /* LIGHT MODE */
@@ -468,4 +525,97 @@ body.light .budget-row input {
 .budget-row {
   padding-bottom: 8px;
   border-bottom: 1px solid #334155;
+}
+
+/* ===== HOVER & TRANSITION EFFECTS ===== */
+
+/* Card lift */
+.card {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+body.light .card:hover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.10);
+}
+
+/* Month filter buttons */
+.months button {
+  transition: background 0.2s ease, transform 0.18s ease;
+}
+.months button:hover:not(.active) {
+  transform: scale(1.08);
+}
+.months .active {
+  transform: scale(1.08);
+}
+
+/* Theme toggle — rotate the icon */
+.theme-toggle {
+  transition: transform 0.25s ease, filter 0.2s ease;
+}
+.theme-toggle:hover {
+  transform: rotate(18deg) scale(1.1);
+  filter: brightness(1.15);
+}
+
+/* Transaction row highlight */
+.transaction {
+  transition: background 0.18s ease;
+  border-radius: 6px;
+}
+.transaction:hover {
+  background: rgba(99, 102, 241, 0.07);
+}
+
+/* Action buttons — add smooth transitions to existing hovers */
+.btn-edit,
+.btn-delete,
+.btn-save,
+.btn-cancel {
+  transition: background 0.15s ease, color 0.15s ease,
+              border-color 0.15s ease, transform 0.15s ease;
+}
+.btn-edit:hover,
+.btn-save:hover,
+.btn-cancel:hover {
+  transform: scale(1.05);
+}
+.btn-delete:hover {
+  transform: scale(1.05);
+}
+
+/* Add Expense submit button */
+.expense-form button {
+  transition: filter 0.2s ease, transform 0.18s ease;
+}
+.expense-form button:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+/* Budget save button */
+.budget-row button {
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.budget-row button:hover {
+  transform: scale(1.05);
+}
+
+/* Category chip */
+.category-item {
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.category-item:hover {
+  transform: translateY(-1px);
+}
+
+/* Delete icon inside category chip */
+.delete-btn {
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.delete-btn:hover {
+  transform: scale(1.2);
 }
