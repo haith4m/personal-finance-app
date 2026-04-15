@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import supabase from "../utils/supabase";
 
-export default function TransactionsList({ selectedMonth, onRefresh }) {
-  const [transactions, setTransactions] = useState([]);
+export default function TransactionsList({ transactions = [], onRefresh }) {
   const [categories, setCategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ amount: "", description: "", categoryId: "" });
@@ -11,42 +10,9 @@ export default function TransactionsList({ selectedMonth, onRefresh }) {
     fetchCategories();
   }, []);
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [selectedMonth]);
-
-  const fetchTransactions = async () => {
-    const { data } = await supabase
-      .from("transactions")
-      .select(`
-        id,
-        amount,
-        description,
-        transaction_date,
-        category_id,
-        categories(name)
-      `)
-      .order("created_at", { ascending: false });
-
-    const filtered =
-      selectedMonth !== undefined
-        ? (data || []).filter((t) => {
-            if (!t.transaction_date) return true;
-            return new Date(t.transaction_date).getMonth() === selectedMonth;
-          })
-        : (data || []);
-
-    setTransactions(filtered);
-  };
-
   const fetchCategories = async () => {
     const { data } = await supabase.from("categories").select("*");
     setCategories(data || []);
-  };
-
-  const refresh = () => {
-    fetchTransactions();
-    if (onRefresh) onRefresh();
   };
 
   const handleDelete = async (id) => {
@@ -56,7 +22,7 @@ export default function TransactionsList({ selectedMonth, onRefresh }) {
     if (error) {
       alert("Error deleting transaction");
     } else {
-      refresh();
+      onRefresh();
     }
   };
 
@@ -88,7 +54,7 @@ export default function TransactionsList({ selectedMonth, onRefresh }) {
       alert("Error updating transaction");
     } else {
       setEditingId(null);
-      refresh();
+      onRefresh();
     }
   };
 

@@ -45,11 +45,14 @@ export default function Dashboard() {
     const { data } = await supabase
       .from("transactions")
       .select(`
+        id,
         amount,
         description,
         transaction_date,
+        category_id,
         categories(name)
-      `);
+      `)
+      .order("created_at", { ascending: false });
 
     const filtered = data?.filter((t) => {
       if (!t.transaction_date) return true;
@@ -238,7 +241,7 @@ export default function Dashboard() {
       {/* TRANSACTIONS */}
       <div className="card">
         <h3>Transactions</h3>
-        <TransactionsList selectedMonth={selectedMonth} onRefresh={fetchData} />
+        <TransactionsList transactions={transactions} onRefresh={fetchData} />
       </div>
 
     </div>
