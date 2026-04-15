@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import supabase from "../utils/supabase";
+import toast from "react-hot-toast";
 
 export default function BudgetForm() {
   const [categories, setCategories] = useState([]);
@@ -7,12 +8,23 @@ export default function BudgetForm() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchCategories();
+    fetchCategoriesAndBudgets();
   }, []);
 
-  const fetchCategories = async () => {
-    const { data } = await supabase.from("categories").select("*");
-    setCategories(data || []);
+  const fetchCategoriesAndBudgets = async () => {
+    const { data: cats } = await supabase.from("categories").select("*");
+    setCategories(cats || []);
+
+    const { data: buds } = await supabase.from("budgets").select("category_id, limit_amount");
+    
+    if (buds) {
+      const initialAmounts = {};
+      // Iterate from oldest to newest to keep the latest if duplicates exist
+      buds.forEach(b => {
+        initialAmounts[b.category_id] = b.limit_amount;
+      });
+      setAmounts(initialAmounts);
+    }
   };
 
   const handleChange = (categoryId, value) => {
@@ -26,26 +38,44 @@ export default function BudgetForm() {
     const amount = Number(amounts[categoryId]);
 
     if (!amount || amount <= 0) {
-      alert("Enter a valid amount");
+      toast.error("Enter a valid amount");
       return;
     }
 
     setLoading(true);
 
-    const { error } = await supabase.from("budgets").upsert([
-      {
-        category_id: categoryId,
-        limit_amount: amount,
-      },
-    ]);
+    // Check if budget exists for this category
+    const { data: existingBudget } = await supabase
+      .from("budgets")
+      .select("id")
+      .eq("category_id", categoryId)
+      .maybeSingle();
+
+    let error;
+
+    if (existingBudget) {
+      const res = await supabase
+        .from("budgets")
+        .update({ limit_amount: amount })
+        .eq("id", existingBudget.id);
+      error = res.error;
+    } else {
+      const res = await supabase.from("budgets").insert([
+        {
+          category_id: categoryId,
+          limit_amount: amount,
+        },
+      ]);
+      error = res.error;
+    }
 
     setLoading(false);
 
     if (error) {
       console.error(error);
-      alert("Error saving budget");
+      toast.error("Error saving budget");
     } else {
-      alert("Budget saved!");
+      toast.success("Budget saved!");
     }
   };
 

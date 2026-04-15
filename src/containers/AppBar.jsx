@@ -9,6 +9,10 @@ import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { useTheme } from "@mui/material/styles";
+import { useColorMode } from "../context/ThemeContext";
 
 import { useAuth } from "../hooks/useAuth";
 
@@ -20,6 +24,8 @@ const pages = [
 
 function ResponsiveAppBar() {
   const { session, loading } = useAuth();
+  const theme = useTheme();
+  const colorMode = useColorMode();
 
   const [anchorElNav, setAnchorElNav] = useState(null);
 
@@ -36,7 +42,7 @@ function ResponsiveAppBar() {
   }
 
   return (
-    <AppBar position="static" color="#FFF" elevation={0}>
+    <AppBar position="static" color="default" elevation={1}>
       <Container>
         <Toolbar disableGutters>
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -113,6 +119,9 @@ function ResponsiveAppBar() {
               return null;
             })}
           </Box>
+          <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
+            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
         </Toolbar>
       </Container>
     </AppBar>

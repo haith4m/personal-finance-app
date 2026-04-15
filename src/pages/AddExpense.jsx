@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import supabase from "../utils/supabase";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const validationSchema = Yup.object({
   amount: Yup.number()
@@ -47,7 +48,7 @@ export default function AddExpense({ compact, onRefresh }) {
       const user = session?.user;
 
       if (!user) {
-        alert("Not logged in");
+        toast.error("Not logged in");
         return;
       }
 
@@ -63,8 +64,9 @@ export default function AddExpense({ compact, onRefresh }) {
 
       if (error) {
         console.error(error);
-        alert("Error adding expense. Please try again later.");
+        toast.error("Error adding expense. Please try again later.");
       } else {
+        toast.success("Expense added successfully!");
         resetForm({
           values: {
             amount: "",

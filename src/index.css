@@ -1,3 +1,44 @@
+/* ===== COLOR SYSTEM ===== */
+:root {
+  /* Light Mode */
+  --bg-main: #f9fafb;
+  --bg-card: #ffffff;
+  --border-color: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+
+  /* Accents */
+  --color-primary: #06b6d4;
+  --color-primary-hover: #0891b2;
+  --color-secondary: #f97316;
+  --color-success: #22c55e;
+  --color-success-hover: #16a34a;
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+body.dark {
+  /* Dark Mode */
+  --bg-main: #111827;
+  --bg-card: #1f2937;
+  --border-color: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+}
+
+body {
+  background-color: var(--bg-main) !important;
+  color: var(--text-primary) !important;
+  font-family: "Inter", sans-serif;
+  margin: 0;
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes fadeInUp {
   from {
@@ -10,7 +51,6 @@
   }
 }
 
-/* Staggered fade-in for every section in the dashboard */
 .dashboard > * {
   animation: fadeInUp 0.45s ease both;
 }
@@ -24,7 +64,6 @@
 .dashboard > *:nth-child(8) { animation-delay: 490ms; }
 .dashboard > *:nth-child(9) { animation-delay: 560ms; }
 
-/* Honour user preference — kill all motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -32,27 +71,11 @@
   }
 }
 
-/* ===== GLOBAL ===== */
-body.dark {
-  background: #0f172a;
-  color: white;
-}
-
-body.light {
-  background: #f8fafc;
-  color: #0f172a;
-}
-
-body {
-  font-family: "Inter", sans-serif;
-}
-
 /* ===== DASHBOARD GRID ===== */
 .dashboard {
   max-width: 1200px;
   margin: auto;
   padding: 20px;
-
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
@@ -61,64 +84,46 @@ body {
 /* ===== HEADER ===== */
 .header {
   display: grid;
-  grid-template-columns: 1fr auto 1fr; /* 🔥 KEY FIX */
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   margin-bottom: 10px;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
+  position: relative;
 }
 
-/* CENTER CONTENT */
 .header-center {
   grid-column: 2;
   text-align: center;
 }
 
-/* RIGHT BUTTON */
-.theme-toggle {
-  grid-column: 3;
-  justify-self: end;
-
-  padding: 6px 10px;
-  border-radius: 20px;
-  border: none;
-  background: #6366f1;
-  color: white;
-  cursor: pointer;
-}
-
 .header h1 {
   font-weight: 600;
+  margin: 0 0 4px 0;
 }
 
 .header p {
   font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
-/* 🔥 FIX ICON POSITION */
 .theme-toggle {
   position: absolute;
   right: 0;
   top: 0;
   padding: 6px 10px;
   border-radius: 20px;
-  border: none;
-  background: #6366f1;
-  color: white;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
   cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.2s ease;
 }
 
-/* ===== THEME BUTTON ===== */
-.theme-toggle {
-  position: absolute;
-  right: 0;
-  top: 0;
-  padding: 6px 10px;
-  border-radius: 20px;
-  border: none;
-  background: #6366f1;
-  color: white;
-  cursor: pointer;
+.theme-toggle:hover {
+  transform: rotate(18deg) scale(1.1);
+  box-shadow: var(--shadow-card);
 }
 
 /* ===== MONTHS ===== */
@@ -130,34 +135,56 @@ body {
 }
 
 .months button {
-  background: #1e293b;
-  border: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   padding: 8px 14px;
   border-radius: 20px;
-  color: white;
+  color: var(--text-primary);
   cursor: pointer;
+  transition: background 0.2s ease, transform 0.18s ease, color 0.2s;
+}
+
+.months button:hover:not(.active) {
+  transform: scale(1.08);
+  border-color: var(--color-primary);
 }
 
 .months .active {
-  background: #6366f1;
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+  transform: scale(1.08);
 }
 
 /* ===== CARDS ===== */
 .card {
-  background: #1e293b;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   padding: 20px;
   border-radius: 16px;
   min-width: 0;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
-body.light .card {
-  background: white;
-  border: 1px solid #e2e8f0;
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* ===== TOTAL CARD ===== */
 .total-card {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-top: 4px solid var(--color-primary);
+}
+
+.total-card h3 {
+  color: var(--text-secondary);
+  margin-top: 0;
+}
+
+.total-card h1 {
+  margin: 10px 0;
+  font-size: 2.5rem;
 }
 
 /* ===== CHART LEGEND ===== */
@@ -174,14 +201,9 @@ body.light .card {
   align-items: center;
   gap: 5px;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
-body.light .chart-legend-item {
-  color: #475569;
-}
-
-/* ===== CHART ===== */
 .chart-container {
   width: 100%;
   height: 260px;
@@ -198,19 +220,21 @@ body.light .chart-legend-item {
   display: flex;
   justify-content: space-between;
   font-size: 14px;
+  margin-bottom: 6px;
 }
 
 .budget-name {
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .budget-amount {
-  color: #e0e0e0;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .bar {
-  background: #334155;
+  background: var(--border-color);
   height: 10px;
   border-radius: 10px;
   overflow: hidden;
@@ -226,20 +250,24 @@ body.light .chart-legend-item {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
+  margin-top: 4px;
 }
 
 .over-text {
-  color: #ef4444;
+  color: var(--color-danger);
+  font-weight: 600;
 }
 
 /* ===== ALERT ===== */
 .alert {
-  background: #7f1d1d;
-  color: #fecaca;
-  padding: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  padding: 10px 12px;
   border-radius: 10px;
-  margin-top: 10px;
+  margin-top: 15px;
   font-size: 13px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  font-weight: 500;
 }
 
 /* ===== TRANSACTIONS ===== */
@@ -247,20 +275,30 @@ body.light .chart-legend-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #334155;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.18s ease;
+  border-radius: 6px;
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction:hover {
+  background: rgba(6, 182, 212, 0.05);
 }
 
 .transaction p {
   margin: 0;
-  color: #e0e0e0;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .tx-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .tx-right {
@@ -283,56 +321,63 @@ body.light .chart-legend-item {
 .btn-delete,
 .btn-save,
 .btn-cancel {
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 6px;
-  border: none;
+  border: 1px solid transparent;
   font-size: 12px;
   cursor: pointer;
   font-weight: 500;
+  transition: all 0.15s ease;
 }
 
 .btn-edit {
-  background: #334155;
-  color: #94a3b8;
+  background: var(--bg-main);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
 }
 
 .btn-edit:hover {
-  background: #475569;
-  color: white;
+  background: var(--border-color);
+  color: var(--text-primary);
+  transform: scale(1.05);
 }
 
 .btn-delete {
   background: transparent;
-  color: #ef4444;
-  border: 1px solid #ef444460;
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .btn-delete:hover {
-  background: #ef4444;
+  background: var(--color-danger);
   color: white;
+  transform: scale(1.05);
 }
 
 .btn-save {
-  background: #22c55e;
+  background: var(--color-success);
   color: white;
 }
 
 .btn-save:hover {
-  background: #16a34a;
+  background: var(--color-success-hover);
+  transform: scale(1.05);
 }
 
 .btn-cancel {
-  background: #334155;
-  color: #94a3b8;
+  background: var(--bg-main);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
 }
 
 .btn-cancel:hover {
-  background: #475569;
-  color: white;
+  background: var(--border-color);
+  color: var(--text-primary);
+  transform: scale(1.05);
 }
 
 .transaction-editing {
-  padding: 12px 0;
+  padding: 12px 10px;
   flex-direction: column;
   align-items: stretch;
 }
@@ -346,152 +391,173 @@ body.light .chart-legend-item {
 
 .field-error {
   font-size: 12px;
-  color: #f87171;
+  color: var(--color-danger);
   padding-left: 2px;
 }
 
-body.light .field-error {
-  color: #dc2626;
-}
-
-/* ===== ADD EXPENSE ===== */
-.add-expense-card {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border: 1px solid #334155;
-}
-
+/* ===== EXPENSE FORM ===== */
 .expense-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .expense-form input,
 .expense-form select {
   padding: 10px;
   border-radius: 8px;
-  border: none;
+  border: 1px solid var(--border-color);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.expense-form input:focus,
+.expense-form select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
 }
 
 .expense-form input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  opacity: 0.6;
   cursor: pointer;
-}
-
-body.light .expense-form input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: none;
   opacity: 0.6;
 }
 
-body.dark .expense-form input,
-body.dark .expense-form select {
-  background: #0f172a;
-  color: white;
-}
-
-body.light .expense-form input,
-body.light .expense-form select {
-  background: #f1f5f9;
-  color: black;
+body.dark .expense-form input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }
 
 .expense-form button {
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  background: #6366f1;
-  color: white;
-  cursor: pointer;
-}
-
-/* ===== CATEGORY ===== */
-.category-card {
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  border: 1px solid #334155;
-}
-
-/* List container — vertical stack with consistent gap */
-.categories {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-/* ===== CATEGORY ROW ===== */
-.category-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  padding: 12px;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  background: #1e2d40;
-  border: 1px solid #334155;
-  color: #ffffff;
-  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  border: none;
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.18s ease;
 }
 
-.category-item:hover {
-  background: #263d56;
-  border-color: #475569;
+.expense-form button:hover {
+  background: var(--color-primary-hover);
   transform: translateY(-1px);
 }
 
-/* Delete button pushed to far right */
+/* ===== CATEGORIES ===== */
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: all 0.18s ease;
+}
+
+.category-item:hover {
+  background: var(--bg-card);
+  border-color: var(--text-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
 .category-item .delete-btn {
   margin-left: auto;
 }
 
-/* DELETE BUTTON */
 .delete-btn {
   background: transparent;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: 2px;
-  color: #64748b;
+  padding: 4px;
+  color: var(--text-secondary);
   transition: color 0.15s ease, transform 0.15s ease;
+  border-radius: 50%;
 }
 
 .delete-btn:hover {
-  color: #ef4444;
-  transform: scale(1.2);
+  color: var(--color-danger);
+  transform: scale(1.15);
+  background: rgba(239, 68, 68, 0.1);
 }
 
-/* LIGHT MODE */
-body.light .category-item {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #1e293b;
+/* ===== BUDGET FORM ===== */
+.budget-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-body.light .category-item:hover {
-  background: #e2e8f0;
-  border-color: #94a3b8;
+.budget-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 70px;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-body.light .transaction p {
-  color: #475569;
+.budget-row:last-child {
+  border-bottom: none;
 }
 
-body.light .budget-amount {
-  color: #475569;
+.budget-label {
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
-body.light .delete-btn {
-  color: #94a3b8;
+.budget-row input {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  text-align: right;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
 }
+
+.budget-row input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+}
+
+.budget-row button {
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-primary);
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  font-weight: 500;
+}
+
+.budget-row button:hover {
+  background: var(--color-primary-hover);
+  transform: scale(1.05);
+}
+
 /* ===== RESPONSIVE ===== */
 @media (min-width: 900px) {
   .dashboard {
     grid-template-columns: 1fr 1fr;
   }
 
-  .total-card,
   .months {
     grid-column: span 2;
   }
@@ -506,140 +572,3 @@ body.light .delete-btn {
     font-size: 12px;
   }
 }
-
-/* ===== BUDGET FORM CLEAN ===== */
-
-.budget-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.budget-row {
-  display: grid;
-  grid-template-columns: 1fr 80px 70px;
-  align-items: center;
-  gap: 10px;
-}
-
-.budget-label {
-  font-weight: 500;
-}
-
-/* INPUT */
-.budget-row input {
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
-  text-align: right;
-}
-
-/* BUTTON */
-.budget-row button {
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
-  background: #6366f1;
-  color: white;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.budget-row button:hover {
-  background: #4f46e5;
-}
-
-
-body.dark .budget-row input {
-  background: #0f172a;
-  color: white;
-}
-
-body.light .budget-row input {
-  background: #f1f5f9;
-  color: black;
-}
-
-.budget-row {
-  padding-bottom: 8px;
-  border-bottom: 1px solid #334155;
-}
-
-/* ===== HOVER & TRANSITION EFFECTS ===== */
-
-/* Card lift */
-.card {
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
-}
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
-}
-body.light .card:hover {
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.10);
-}
-
-/* Month filter buttons */
-.months button {
-  transition: background 0.2s ease, transform 0.18s ease;
-}
-.months button:hover:not(.active) {
-  transform: scale(1.08);
-}
-.months .active {
-  transform: scale(1.08);
-}
-
-/* Theme toggle — rotate the icon */
-.theme-toggle {
-  transition: transform 0.25s ease, filter 0.2s ease;
-}
-.theme-toggle:hover {
-  transform: rotate(18deg) scale(1.1);
-  filter: brightness(1.15);
-}
-
-/* Transaction row highlight */
-.transaction {
-  transition: background 0.18s ease;
-  border-radius: 6px;
-}
-.transaction:hover {
-  background: rgba(99, 102, 241, 0.07);
-}
-
-/* Action buttons — add smooth transitions to existing hovers */
-.btn-edit,
-.btn-delete,
-.btn-save,
-.btn-cancel {
-  transition: background 0.15s ease, color 0.15s ease,
-              border-color 0.15s ease, transform 0.15s ease;
-}
-.btn-edit:hover,
-.btn-save:hover,
-.btn-cancel:hover {
-  transform: scale(1.05);
-}
-.btn-delete:hover {
-  transform: scale(1.05);
-}
-
-/* Add Expense submit button */
-.expense-form button {
-  transition: filter 0.2s ease, transform 0.18s ease;
-}
-.expense-form button:hover {
-  filter: brightness(1.12);
-  transform: translateY(-1px);
-}
-
-/* Budget save button */
-.budget-row button {
-  transition: background 0.2s ease, transform 0.15s ease;
-}
-.budget-row button:hover {
-  transform: scale(1.05);
-}
-
-/* (category-item and delete-btn transitions consolidated above) */

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import supabase from "../utils/supabase";
 import { getCategoryMeta } from "../utils/categoryIcons";
+import toast from "react-hot-toast";
 
 export default function TransactionsList({ transactions = [], onRefresh }) {
   const [categories, setCategories] = useState([]);
@@ -21,8 +22,9 @@ export default function TransactionsList({ transactions = [], onRefresh }) {
 
     const { error } = await supabase.from("transactions").delete().eq("id", id);
     if (error) {
-      alert("Error deleting transaction");
+      toast.error("Error deleting transaction");
     } else {
+      toast.success("Transaction deleted");
       onRefresh();
     }
   };
@@ -38,7 +40,7 @@ export default function TransactionsList({ transactions = [], onRefresh }) {
 
   const handleEditSave = async (id) => {
     if (!editForm.amount) {
-      alert("Please enter an amount");
+      toast.error("Please enter an amount");
       return;
     }
 
@@ -52,15 +54,21 @@ export default function TransactionsList({ transactions = [], onRefresh }) {
       .eq("id", id);
 
     if (error) {
-      alert("Error updating transaction");
+      toast.error("Error updating transaction");
     } else {
+      toast.success("Transaction updated");
       setEditingId(null);
       onRefresh();
     }
   };
 
   if (transactions.length === 0) {
-    return <p style={{ color: "#94a3b8", fontSize: "14px" }}>No transactions this month.</p>;
+    return (
+      <div style={{ textAlign: 'center', padding: '30px 20px', backgroundColor: 'var(--bg-main)', borderRadius: '12px', border: '1px dashed var(--border-color)', marginTop: '10px' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '15px', margin: 0 }}>No transactions found for this period.</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '6px' }}>Add a new expense to get started!</p>
+      </div>
+    );
   }
 
   return (
@@ -105,17 +113,23 @@ export default function TransactionsList({ transactions = [], onRefresh }) {
         ) : (
           <div key={t.id} className="transaction">
             <div className="tx-left">
-              {(() => {
-                const { icon: Icon, color } = getCategoryMeta(t.categories?.name || "");
-                return <Icon style={{ fontSize: 20, color, flexShrink: 0 }} />;
-              })()}
-              <div>
-                <strong>{t.description || "—"}</strong>
-                <p>{t.categories?.name || "No category"}</p>
+              <div className="tx-icon-wrapper" style={{ backgroundColor: 'var(--bg-card)', padding: '10px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-card)' }}>
+                {(() => {
+                  const { icon: Icon, color } = getCategoryMeta(t.categories?.name || "");
+                  return <Icon style={{ fontSize: 24, color, flexShrink: 0 }} />;
+                })()}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <strong style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{t.description || t.categories?.name || "Transaction"}</strong>
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  {t.categories?.name || "No category"} • {t.transaction_date ? new Date(t.transaction_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : "No date"}
+                </span>
               </div>
             </div>
-            <div className="tx-right">
-              <span className="tx-amount">£{t.amount}</span>
+            <div className="tx-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+              <span className="tx-amount" style={{ color: Number(t.amount) < 0 || t.categories?.name === 'Income' ? 'var(--color-success)' : 'var(--color-danger)', fontSize: '16px' }}>
+                {Number(t.amount) < 0 || t.categories?.name === 'Income' ? '+' : '-'}£{Math.abs(Number(t.amount)).toFixed(2)}
+              </span>
               <div className="tx-actions">
                 <button className="btn-edit" onClick={() => handleEditClick(t)}>
                   Edit

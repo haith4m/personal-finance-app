@@ -9,6 +9,7 @@ import "./index.css";
 import App from "./App.jsx";
 import AppBar from "./containers/AppBar";
 import AuthProvider from "./context/AuthContext.jsx";
+import { ColorModeProvider } from "./context/ThemeContext.jsx";
 import githubLogo from "/github.svg";
 import SignIn from "./pages/auth/SignIn.jsx";
 import SignUp from "./pages/auth/SignUp.jsx";
@@ -16,7 +17,8 @@ import SignUp from "./pages/auth/SignUp.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter> {/* ✅ MOVE TO TOP */}
-      <AuthProvider>
+      <ColorModeProvider>
+        <AuthProvider>
 
         <div
           style={{
@@ -54,6 +56,7 @@ createRoot(document.getElementById("root")).render(
         </div>
 
       </AuthProvider>
+      </ColorModeProvider>
     </BrowserRouter>
 
     <Toaster />
