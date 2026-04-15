@@ -205,7 +205,8 @@ body.light .chart-legend-item {
 }
 
 .budget-amount {
-  color: #94a3b8;
+  color: #e0e0e0;
+  font-weight: 500;
 }
 
 .bar {
@@ -252,7 +253,8 @@ body.light .chart-legend-item {
 
 .transaction p {
   margin: 0;
-  color: #94a3b8;
+  color: #e0e0e0;
+  font-weight: 500;
 }
 
 .tx-left {
@@ -408,19 +410,39 @@ body.light .expense-form select {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   border: 1px solid #334155;
 }
-/* ===== CATEGORY CHIP ===== */
+
+/* List container — vertical stack with consistent gap */
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* ===== CATEGORY ROW ===== */
 .category-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 20px;
-  font-size: 13px;
-  background: #334155;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #1e2d40;
+  border: 1px solid #334155;
+  color: #ffffff;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 
 .category-item:hover {
-  background: #475569;
+  background: #263d56;
+  border-color: #475569;
+  transform: translateY(-1px);
+}
+
+/* Delete button pushed to far right */
+.category-item .delete-btn {
+  margin-left: auto;
 }
 
 /* DELETE BUTTON */
@@ -431,21 +453,37 @@ body.light .expense-form select {
   display: flex;
   align-items: center;
   padding: 2px;
-  color: #94a3b8;
+  color: #64748b;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .delete-btn:hover {
   color: #ef4444;
+  transform: scale(1.2);
 }
 
 /* LIGHT MODE */
 body.light .category-item {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+body.light .category-item:hover {
   background: #e2e8f0;
-  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+body.light .transaction p {
+  color: #475569;
+}
+
+body.light .budget-amount {
+  color: #475569;
 }
 
 body.light .delete-btn {
-  color: #64748b;
+  color: #94a3b8;
 }
 /* ===== RESPONSIVE ===== */
 @media (min-width: 900px) {
@@ -604,18 +642,4 @@ body.light .card:hover {
   transform: scale(1.05);
 }
 
-/* Category chip */
-.category-item {
-  transition: background 0.18s ease, transform 0.18s ease;
-}
-.category-item:hover {
-  transform: translateY(-1px);
-}
-
-/* Delete icon inside category chip */
-.delete-btn {
-  transition: color 0.15s ease, transform 0.15s ease;
-}
-.delete-btn:hover {
-  transform: scale(1.2);
-}
+/* (category-item and delete-btn transitions consolidated above) */

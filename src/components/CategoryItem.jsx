@@ -23,7 +23,7 @@ const CategoryItem = ({ category, refresh }) => {
 
   return (
     <div className="category-item">
-      <Icon style={{ fontSize: 16, color }} />
+      <Icon style={{ fontSize: 18, color, flexShrink: 0 }} />
       <span>{category.name}</span>
 
       {!category.is_default && (

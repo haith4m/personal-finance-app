@@ -43,8 +43,8 @@ export default function AddExpense({ compact, onRefresh }) {
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
-      const { data } = await supabase.auth.getUser();
-      const user = data.user;
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
 
       if (!user) {
         alert("Not logged in");
@@ -63,7 +63,7 @@ export default function AddExpense({ compact, onRefresh }) {
 
       if (error) {
         console.error(error);
-        alert("Error adding expense");
+        alert("Error adding expense. Please try again later.");
       } else {
         resetForm({
           values: {
