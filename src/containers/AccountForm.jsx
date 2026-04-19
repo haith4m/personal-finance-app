@@ -1,24 +1,21 @@
 import { memo } from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
 const validationSchema = yup.object({
-  name: yup
-    .string("Enter your name")
-    .required("Name is required"),
-
-  email: yup
-    .string("Enter your email")
-    .email("Enter a valid email")
-    .required("Email is required"),
-
-  password: yup
-    .string("Enter your password")
-    .min(8, "Password should be of minimum 8 characters length")
-    .required("Password is required"),
+  name: yup.string("Enter your name").required("Name is required"),
+  email: yup.string("Enter your email").email("Enter a valid email").required("Email is required"),
+  password: yup.string("Enter your password").min(8, "Password should be of minimum 8 characters length").required("Password is required"),
 });
+
+const fieldSx = {
+  "& .MuiInputBase-input": {
+    fontSize: 15,
+  },
+};
 
 const AccountForm = ({ onSubmit }) => {
   const formik = useFormik({
@@ -27,14 +24,18 @@ const AccountForm = ({ onSubmit }) => {
       email: "",
       password: "",
     },
-    validationSchema: validationSchema,
+    validationSchema,
     onSubmit: async (values) => {
       await onSubmit(values.name, values.email, values.password);
     },
   });
 
   return (
+<<<<<<< HEAD
     <form onSubmit={formik.handleSubmit}>
+=======
+    <Box component="form" onSubmit={formik.handleSubmit} sx={{ display: "grid", gap: 2.25 }}>
+>>>>>>> ef6a9ec (UI overhaul, reports, goals, theme consistency, validation improvements)
       <TextField
         fullWidth
         id="name"
@@ -45,7 +46,7 @@ const AccountForm = ({ onSubmit }) => {
         onBlur={formik.handleBlur}
         error={formik.touched.name && Boolean(formik.errors.name)}
         helperText={formik.touched.name && formik.errors.name}
-        style={{ margin: "1rem" }}
+        sx={fieldSx}
       />
 
       <TextField
@@ -58,7 +59,7 @@ const AccountForm = ({ onSubmit }) => {
         onBlur={formik.handleBlur}
         error={formik.touched.email && Boolean(formik.errors.email)}
         helperText={formik.touched.email && formik.errors.email}
-        style={{ margin: "1rem" }}
+        sx={fieldSx}
       />
 
       <TextField
@@ -72,20 +73,13 @@ const AccountForm = ({ onSubmit }) => {
         onBlur={formik.handleBlur}
         error={formik.touched.password && Boolean(formik.errors.password)}
         helperText={formik.touched.password && formik.errors.password}
-        style={{ margin: "1rem" }}
+        sx={fieldSx}
       />
 
-      <Button
-        color="primary"
-        variant="contained"
-        fullWidth
-        type="submit"
-        size="small"
-        style={{ margin: "1rem" }}
-      >
-        Submit
+      <Button color="secondary" variant="contained" fullWidth type="submit" size="large">
+        Continue
       </Button>
-    </form>
+    </Box>
   );
 };
 
