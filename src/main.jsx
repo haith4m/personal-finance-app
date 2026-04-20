@@ -17,7 +17,6 @@ import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 
 import AppBar from "./containers/AppBar";
-<<<<<<< HEAD
 import AuthProvider from "./context/AuthContext.jsx";
 import { ColorModeProvider } from "./context/ThemeContext.jsx";
 import githubLogo from "/github.svg";
@@ -70,7 +69,6 @@ createRoot(document.getElementById("root")).render(
     </BrowserRouter>
 
     <Toaster />
-=======
 import AuthProvider from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import QuickAddModal from "./components/QuickAddModal";
@@ -213,6 +211,6 @@ function AppRoot() {
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AppRoot />
->>>>>>> ef6a9ec (UI overhaul, reports, goals, theme consistency, validation improvements)
+
   </StrictMode>
 );
