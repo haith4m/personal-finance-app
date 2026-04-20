@@ -42,10 +42,14 @@ const SignUp = () => {
   };
 
   return (
-    <>
-      <h1>Sign Up</h1>
-      <AccountForm onSubmit={signUp} />
-    </>
+    <div className="auth-page">
+      <div className="auth-card">
+        <p className="auth-kicker">New Subscription</p>
+        <h1>Sign Up</h1>
+        <p className="auth-intro">Open a fresh ledger and start building a clearer picture of where your money goes.</p>
+        <AccountForm onSubmit={signUp} />
+      </div>
+    </div>
   );
 };
 
