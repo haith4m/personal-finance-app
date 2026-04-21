@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import supabase from "../utils/supabase";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useAuth } from "../hooks/useAuth";
+import { getCategories, addTransaction } from "../lib/api";
 
 const validationSchema = Yup.object({
   amount: Yup.number()
@@ -11,6 +12,7 @@ const validationSchema = Yup.object({
     .positive("Amount must be greater than 0")
     .required("Amount is required"),
   description: Yup.string()
+    .trim()
     .max(100, "Description must be 100 characters or less"),
   date: Yup.string()
     .required("Date is required"),
@@ -20,20 +22,14 @@ const validationSchema = Yup.object({
 
 export default function AddExpense({ compact, onRefresh }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetchCategories();
+    getCategories()
+      .then(setCategories)
+      .catch((err) => console.error("Error fetching categories:", err));
   }, []);
-
-  const fetchCategories = async () => {
-    const { data, error } = await supabase.from("categories").select("*");
-    if (error) {
-      console.error("Error fetching categories:", error);
-    } else {
-      setCategories(data || []);
-    }
-  };
 
   const formik = useFormik({
     initialValues: {
@@ -43,29 +39,22 @@ export default function AddExpense({ compact, onRefresh }) {
       categoryId: "",
     },
     validationSchema,
+    validateOnMount: true,
     onSubmit: async (values, { resetForm }) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user;
-
       if (!user) {
         toast.error("Not logged in");
         return;
       }
 
-      const { error } = await supabase.from("transactions").insert([
-        {
-          user_id: user.id,
-          amount: Number(values.amount),
-          description: values.description,
-          category_id: values.categoryId,
-          transaction_date: new Date(values.date).toISOString(),
-        },
-      ]);
+      try {
+        await addTransaction({
+          userId: user.id,
+          amount: values.amount,
+          description: values.description.trim(),
+          categoryId: values.categoryId,
+          date: values.date,
+        });
 
-      if (error) {
-        console.error(error);
-        toast.error("Error adding expense. Please try again later.");
-      } else {
         toast.success("Expense added successfully!");
         resetForm({
           values: {
@@ -80,6 +69,9 @@ export default function AddExpense({ compact, onRefresh }) {
         } else {
           navigate("/");
         }
+      } catch (err) {
+        console.error(err);
+        toast.error("Error adding expense. Please try again later.");
       }
     },
   });
@@ -93,6 +85,7 @@ export default function AddExpense({ compact, onRefresh }) {
             type="number"
             name="amount"
             placeholder="Amount (£)"
+            className={formik.touched.amount && formik.errors.amount ? "input-error" : ""}
             value={formik.values.amount}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -107,6 +100,7 @@ export default function AddExpense({ compact, onRefresh }) {
             type="text"
             name="description"
             placeholder="Description (optional)"
+            className={formik.touched.description && formik.errors.description ? "input-error" : ""}
             value={formik.values.description}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -120,6 +114,7 @@ export default function AddExpense({ compact, onRefresh }) {
           <input
             type="date"
             name="date"
+            className={formik.touched.date && formik.errors.date ? "input-error" : ""}
             value={formik.values.date}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -132,6 +127,7 @@ export default function AddExpense({ compact, onRefresh }) {
         <div className="field">
           <select
             name="categoryId"
+            className={formik.touched.categoryId && formik.errors.categoryId ? "input-error" : ""}
             value={formik.values.categoryId}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -148,7 +144,9 @@ export default function AddExpense({ compact, onRefresh }) {
           )}
         </div>
 
-        <button type="submit">Add</button>
+        <button type="submit" disabled={!formik.isValid || formik.isSubmitting}>
+          Add
+        </button>
 
       </form>
     </div>

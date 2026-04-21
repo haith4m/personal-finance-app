@@ -1,110 +1,104 @@
 import { useEffect, useState } from "react";
-import supabase from "../utils/supabase";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import toast from "react-hot-toast";
+import { getCategories, getBudgets, upsertBudget } from "../lib/api";
+
+const budgetSchema = Yup.object({
+  amount: Yup.number()
+    .typeError("Must be a number")
+    .positive("Must be greater than 0")
+    .required("Amount is required"),
+});
+
+function BudgetRow({ cat, initialAmount }) {
+  const formik = useFormik({
+    initialValues: {
+      amount: initialAmount !== undefined ? String(initialAmount) : "",
+    },
+    validationSchema: budgetSchema,
+    validateOnMount: true,
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        await upsertBudget(cat.id, Number(values.amount));
+        toast.success("Budget saved!");
+      } catch (err) {
+        console.error(err);
+        toast.error("Error saving budget");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  return (
+    <div className="budget-row">
+      <span className="budget-label">{cat.name}</span>
+
+      <div className="budget-input-wrapper">
+        <input
+          type="number"
+          name="amount"
+          placeholder="£"
+          className={formik.touched.amount && formik.errors.amount ? "input-error" : ""}
+          value={formik.values.amount}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+        />
+        {formik.touched.amount && formik.errors.amount && (
+          <span className="field-error">{formik.errors.amount}</span>
+        )}
+      </div>
+
+      <button
+        onClick={formik.handleSubmit}
+        disabled={!formik.isValid || formik.isSubmitting}
+      >
+        Save
+      </button>
+    </div>
+  );
+}
 
 export default function BudgetForm() {
   const [categories, setCategories] = useState([]);
-  const [amounts, setAmounts] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [budgetAmounts, setBudgetAmounts] = useState({});
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     fetchCategoriesAndBudgets();
   }, []);
 
   const fetchCategoriesAndBudgets = async () => {
-    const { data: cats } = await supabase.from("categories").select("*");
-    setCategories(cats || []);
-
-    const { data: buds } = await supabase.from("budgets").select("category_id, limit_amount");
-    
-    if (buds) {
-      const initialAmounts = {};
-      // Iterate from oldest to newest to keep the latest if duplicates exist
-      buds.forEach(b => {
-        initialAmounts[b.category_id] = b.limit_amount;
+    try {
+      const [cats, buds] = await Promise.all([getCategories(), getBudgets()]);
+      setCategories(cats);
+      const amounts = {};
+      buds.forEach((b) => {
+        if (b.categories) amounts[b.categories.id] = b.limit_amount;
       });
-      setAmounts(initialAmounts);
+      setBudgetAmounts(amounts);
+    } catch (err) {
+      console.error("Error loading budget form data:", err);
+    } finally {
+      setLoaded(true);
     }
   };
 
-  const handleChange = (categoryId, value) => {
-    setAmounts({
-      ...amounts,
-      [categoryId]: value,
-    });
-  };
+  return (
+    <div className="card">
+      <h3>Set Budgets</h3>
 
-  const saveBudget = async (categoryId) => {
-    const amount = Number(amounts[categoryId]);
-
-    if (!amount || amount <= 0) {
-      toast.error("Enter a valid amount");
-      return;
-    }
-
-    setLoading(true);
-
-    // Check if budget exists for this category
-    const { data: existingBudget } = await supabase
-      .from("budgets")
-      .select("id")
-      .eq("category_id", categoryId)
-      .maybeSingle();
-
-    let error;
-
-    if (existingBudget) {
-      const res = await supabase
-        .from("budgets")
-        .update({ limit_amount: amount })
-        .eq("id", existingBudget.id);
-      error = res.error;
-    } else {
-      const res = await supabase.from("budgets").insert([
-        {
-          category_id: categoryId,
-          limit_amount: amount,
-        },
-      ]);
-      error = res.error;
-    }
-
-    setLoading(false);
-
-    if (error) {
-      console.error(error);
-      toast.error("Error saving budget");
-    } else {
-      toast.success("Budget saved!");
-    }
-  };
-
- return (
-  <div className="card">
-    <h3>Set Budgets</h3>
-
-    <div className="budget-form">
-      {categories.map((cat) => (
-        <div key={cat.id} className="budget-row">
-
-          <span className="budget-label">{cat.name}</span>
-
-          <input
-            type="number"
-            placeholder="£"
-            value={amounts[cat.id] || ""}
-            onChange={(e) =>
-              handleChange(cat.id, e.target.value)
-            }
-          />
-
-          <button onClick={() => saveBudget(cat.id)}>
-            Save
-          </button>
-
-        </div>
-      ))}
+      <div className="budget-form">
+        {loaded &&
+          categories.map((cat) => (
+            <BudgetRow
+              key={cat.id}
+              cat={cat}
+              initialAmount={budgetAmounts[cat.id]}
+            />
+          ))}
+      </div>
     </div>
-  </div>
-);
+  );
 }

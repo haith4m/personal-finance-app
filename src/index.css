@@ -395,6 +395,21 @@ body {
   padding-left: 2px;
 }
 
+/* ===== INPUT ERROR STATE ===== */
+.expense-form input.input-error,
+.expense-form select.input-error,
+.budget-row input.input-error {
+  border-color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.expense-form input.input-error:focus,
+.expense-form select.input-error:focus,
+.budget-row input.input-error:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
 /* ===== EXPENSE FORM ===== */
 .expense-form {
   display: flex;
@@ -439,9 +454,15 @@ body.dark .expense-form input[type="date"]::-webkit-calendar-picker-indicator {
   transition: background 0.2s ease, transform 0.18s ease;
 }
 
-.expense-form button:hover {
+.expense-form button:hover:not(:disabled) {
   background: var(--color-primary-hover);
   transform: translateY(-1px);
+}
+
+.expense-form button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ===== CATEGORIES ===== */
@@ -504,11 +525,17 @@ body.dark .expense-form input[type="date"]::-webkit-calendar-picker-indicator {
 
 .budget-row {
   display: grid;
-  grid-template-columns: 1fr 80px 70px;
-  align-items: center;
+  grid-template-columns: 1fr minmax(80px, 120px) 70px;
+  align-items: start;
   gap: 12px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
+}
+
+.budget-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .budget-row:last-child {
@@ -518,6 +545,7 @@ body.dark .expense-form input[type="date"]::-webkit-calendar-picker-indicator {
 .budget-label {
   font-weight: 500;
   color: var(--text-primary);
+  padding-top: 8px;
 }
 
 .budget-row input {
@@ -547,9 +575,15 @@ body.dark .expense-form input[type="date"]::-webkit-calendar-picker-indicator {
   font-weight: 500;
 }
 
-.budget-row button:hover {
+.budget-row button:hover:not(:disabled) {
   background: var(--color-primary-hover);
   transform: scale(1.05);
+}
+
+.budget-row button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ===== RESPONSIVE ===== */

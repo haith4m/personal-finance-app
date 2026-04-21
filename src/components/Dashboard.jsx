@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import supabase from "../utils/supabase";
+import { getTransactions, getBudgets } from "../lib/api";
 import BudgetForm from "./BudgetForm";
 import AddExpense from "../pages/AddExpense";
 import CategoriesList from "./CategoriesList";
@@ -20,24 +20,13 @@ import {
 } from "recharts";
 import { getCategoryMeta } from "../utils/categoryIcons";
 
-const COLORS = ["#06b6d4", "#f97316", "#22c55e", "#ef4444", "#8b5cf6", "#ec4899", "#10b981", "#f59e0b"];
-
-// Generate consistent color based on string hash
-const getConsistentColor = (name) => {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return COLORS[Math.abs(hash) % COLORS.length];
-};
-
 const renderChartLegend = ({ payload }) => (
   <div className="chart-legend">
     {payload.map((entry, i) => {
-      const { icon: Icon } = getCategoryMeta(entry.value);
+      const { icon: Icon, color } = getCategoryMeta(entry.value);
       return (
         <div key={i} className="chart-legend-item">
-          <Icon style={{ fontSize: 14, color: getConsistentColor(entry.value) }} />
+          <Icon style={{ fontSize: 14, color }} />
           <span>{entry.value}</span>
         </div>
       );
@@ -52,6 +41,8 @@ export default function Dashboard() {
   const [total, setTotal] = useState(0);
   const [chartData, setChartData] = useState([]);
   const [budgetData, setBudgetData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().getMonth()
@@ -73,149 +64,121 @@ export default function Dashboard() {
   }, [selectedMonth]);
 
   const fetchData = async () => {
-    const { data } = await supabase
-      .from("transactions")
-      .select(`
-        id,
-        amount,
-        description,
-        transaction_date,
-        category_id,
-        categories(name)
-      `)
-      .order("created_at", { ascending: false });
+    setLoading(true);
+    setError(null);
 
-    const filtered = data?.filter((t) => {
-      if (!t.transaction_date) return true;
-      const date = new Date(t.transaction_date);
-      return date.getMonth() === selectedMonth;
-    });
+    try {
+      const [allTransactions, rawBudgets] = await Promise.all([
+        getTransactions(),
+        getBudgets(),
+      ]);
 
-    setTransactions(filtered || []);
+      // ── Filter to selected month ──────────────────────────────────────────
+      const filtered = allTransactions.filter((t) => {
+        if (!t.transaction_date) return true;
+        return new Date(t.transaction_date).getMonth() === selectedMonth;
+      });
 
-    const totalAmount =
-      filtered?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
-    setTotal(totalAmount);
+      setTransactions(filtered);
 
-    // GROUP
-    const grouped = {};
-    filtered?.forEach((t) => {
-      const cat = t.categories?.name || "Other";
-      if (!grouped[cat]) grouped[cat] = 0;
-      grouped[cat] += Number(t.amount);
-    });
+      const totalAmount = filtered.reduce((sum, t) => sum + Number(t.amount), 0);
+      setTotal(totalAmount);
 
-    const chartArray = Object.keys(grouped).map((key) => ({
-      name: key,
-      value: grouped[key],
-    }));
+      // ── Category grouping for chart ───────────────────────────────────────
+      const grouped = {};
+      filtered.forEach((t) => {
+        const cat = t.categories?.name || "Other";
+        grouped[cat] = (grouped[cat] || 0) + Number(t.amount);
+      });
 
-    setChartData(chartArray);
+      const chartArray = Object.entries(grouped).map(([name, value]) => ({ name, value }));
+      setChartData(chartArray);
 
-    // INSIGHTS
-    const prevMonth = selectedMonth === 0 ? 11 : selectedMonth - 1;
-    const prevMonthTransactions = data?.filter((t) => {
-      if (!t.transaction_date) return false;
-      const date = new Date(t.transaction_date);
-      return date.getMonth() === prevMonth;
-    });
+      // ── Smart insights ────────────────────────────────────────────────────
+      const prevMonth = selectedMonth === 0 ? 11 : selectedMonth - 1;
+      const prevMonthTotal = allTransactions
+        .filter((t) => t.transaction_date && new Date(t.transaction_date).getMonth() === prevMonth)
+        .reduce((sum, t) => sum + Number(t.amount), 0);
 
-    const prevMonthTotal = prevMonthTransactions?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
-    
-    let highestCat = null;
-    let highestAmt = 0;
-    chartArray.forEach(c => {
-      if (c.value > highestAmt) {
-        highestAmt = c.value;
-        highestCat = c.name;
+      let highestCat = null;
+      let highestAmt = 0;
+      chartArray.forEach((c) => {
+        if (c.value > highestAmt) { highestAmt = c.value; highestCat = c.name; }
+      });
+
+      let monthComparisonStr;
+      if (totalAmount > prevMonthTotal && prevMonthTotal > 0) {
+        monthComparisonStr = `You spent £${(totalAmount - prevMonthTotal).toFixed(2)} more this month than last month.`;
+      } else if (totalAmount < prevMonthTotal && prevMonthTotal > 0) {
+        monthComparisonStr = `Great job! You spent £${(prevMonthTotal - totalAmount).toFixed(2)} less this month.`;
+      } else if (prevMonthTotal === 0 && totalAmount > 0) {
+        monthComparisonStr = `This is your first month tracking or no data last month.`;
+      } else if (totalAmount === 0) {
+        monthComparisonStr = `No spending recorded yet this month.`;
+      } else {
+        monthComparisonStr = `Spending is exactly the same as last month.`;
       }
-    });
 
-    let monthComparisonStr = "";
-    if (total > prevMonthTotal && prevMonthTotal > 0) {
-      monthComparisonStr = `You spent £${(total - prevMonthTotal).toFixed(2)} more this month than last month.`;
-    } else if (total < prevMonthTotal && prevMonthTotal > 0) {
-      monthComparisonStr = `Great job! You spent £${(prevMonthTotal - total).toFixed(2)} less this month.`;
-    } else if (prevMonthTotal === 0 && total > 0) {
-      monthComparisonStr = `This is your first month tracking or no data last month.`;
-    } else if (total === 0) {
-      monthComparisonStr = `No spending recorded yet this month.`;
-    } else {
-      monthComparisonStr = `Spending is exactly the same as last month.`;
+      setInsights({ highestCategory: highestCat, highestAmount: highestAmt, monthComparison: monthComparisonStr });
+
+      // ── Yearly trend ──────────────────────────────────────────────────────
+      const currentYear = new Date().getFullYear();
+      const monthlyTotals = new Array(12).fill(0);
+      allTransactions
+        .filter((t) => t.transaction_date && new Date(t.transaction_date).getFullYear() === currentYear)
+        .forEach((t) => {
+          monthlyTotals[new Date(t.transaction_date).getMonth()] += Number(t.amount);
+        });
+
+      setTrendData(months.map((m, i) => ({ month: m, spent: monthlyTotals[i] })));
+
+      // ── Budget progress ───────────────────────────────────────────────────
+      const seenCategories = new Set();
+      const uniqueBudgets = rawBudgets.filter((b) => {
+        if (!b.categories) return false;
+        if (seenCategories.has(b.categories.name)) return false;
+        seenCategories.add(b.categories.name);
+        return true;
+      });
+
+      setBudgetData(
+        uniqueBudgets.map((b) => ({
+          name: b.categories.name,
+          limit: b.limit_amount,
+          spent: chartArray.find((c) => c.name === b.categories.name)?.value || 0,
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to load dashboard data:", err);
+      setError("Failed to load data. Please refresh the page.");
+    } finally {
+      setLoading(false);
     }
-
-    setInsights({
-      highestCategory: highestCat,
-      highestAmount: highestAmt,
-      monthComparison: monthComparisonStr,
-    });
-
-    // TREND DATA (Total spent per month for the current year)
-    const currentYear = new Date().getFullYear();
-    const yearlyTransactions = data?.filter((t) => {
-      if (!t.transaction_date) return false;
-      const date = new Date(t.transaction_date);
-      return date.getFullYear() === currentYear;
-    });
-
-    const monthlyTotals = new Array(12).fill(0);
-    yearlyTransactions?.forEach((t) => {
-      const month = new Date(t.transaction_date).getMonth();
-      monthlyTotals[month] += Number(t.amount);
-    });
-
-    setTrendData(
-      months.map((m, i) => ({
-        month: m,
-        spent: monthlyTotals[i],
-      }))
-    );
-
-    // BUDGETS
-    const { data: budgets } = await supabase
-      .from("budgets")
-      .select(`
-        id,
-        limit_amount,
-        categories(id, name)
-      `)
-      .order('created_at', { ascending: false });
-
-    // Deduplicate budgets by category name (or ID)
-    const uniqueBudgets = [];
-    const seenCategories = new Set();
-    
-    if (budgets) {
-      for (const b of budgets) {
-        if (!b.categories) continue;
-        const catName = b.categories.name;
-        if (!seenCategories.has(catName)) {
-          seenCategories.add(catName);
-          uniqueBudgets.push(b);
-        }
-      }
-    }
-
-    const merged = uniqueBudgets.map((b) => {
-      const spent =
-        chartArray.find((c) => c.name === b.categories.name)?.value || 0;
-
-      return {
-        name: b.categories.name,
-        limit: b.limit_amount,
-        spent,
-      };
-    });
-
-    setBudgetData(merged);
   };
 
   const overBudgetCount = budgetData.filter(
     (b) => b.spent > b.limit
   ).length;
 
+  if (error) {
+    return (
+      <div className="dashboard">
+        <div className="data-error">
+          <p>{error}</p>
+          <button onClick={fetchData}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard">
+
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner" />
+        </div>
+      )}
 
       {/* HEADER */}
       <div className="header">
@@ -308,7 +271,7 @@ export default function Dashboard() {
                   animationDuration={700}
                 >
                   {chartData.map((entry, index) => (
-                    <Cell key={index} fill={getConsistentColor(entry.name)} />
+                    <Cell key={index} fill={getCategoryMeta(entry.name).color} />
                   ))}
                 </Pie>
                 <Legend content={renderChartLegend} />
@@ -358,38 +321,43 @@ export default function Dashboard() {
 
         {budgetData.map((b, i) => {
           const percent = Math.min((b.spent / b.limit) * 100, 100);
+          const { icon: BudgetIcon, color: catColor } = getCategoryMeta(b.name);
 
-          let color = "#22c55e";
-          if (percent >= 70) color = "#f59e0b";
-          if (percent >= 100) color = "#ef4444";
+          // Status colour for the bar fill and footer text
+          let statusColor = catColor;
+          if (percent >= 70) statusColor = "#f59e0b";
+          if (percent >= 100) statusColor = "#ef4444";
 
           return (
-            <div key={i} className="budget-item">
+            <div
+              key={i}
+              className="budget-item"
+              style={{ borderLeft: `3px solid ${catColor}`, paddingLeft: "12px" }}
+            >
               <div className="budget-header">
-                <span className="budget-name">{b.name}</span>
+                <span className="budget-name" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <BudgetIcon style={{ fontSize: 16, color: catColor, flexShrink: 0 }} />
+                  {b.name}
+                </span>
                 <span className="budget-amount">
-                  £{b.spent} / £{b.limit}
+                  £{b.spent.toFixed(2)} / £{b.limit.toFixed(2)}
                 </span>
               </div>
 
               <div className="bar">
                 <div
                   className="fill"
-                  style={{
-                    width: `${percent}%`,
-                    background: color,
-                  }}
+                  style={{ width: `${percent}%`, background: statusColor }}
                 />
               </div>
 
               <div className="budget-footer">
-                <span style={{ color }}>
+                <span style={{ color: statusColor }}>
                   {percent.toFixed(0)}% used
                 </span>
-
                 {b.spent > b.limit && (
                   <span className="over-text">
-                    Over by £{b.spent - b.limit}
+                    Over by £{(b.spent - b.limit).toFixed(2)}
                   </span>
                 )}
               </div>
