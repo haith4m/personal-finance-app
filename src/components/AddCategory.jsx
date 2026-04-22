@@ -4,7 +4,6 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import toast from "react-hot-toast";
-
 import supabase from "../utils/supabase";
 
 const AddCategory = ({ refresh }) => {
@@ -13,9 +12,7 @@ const AddCategory = ({ refresh }) => {
       name: "",
     },
     onSubmit: async (values, { resetForm }) => {
-      const { error } = await supabase.from("categories").insert([
-        { name: values.name },
-      ]);
+      const { error } = await supabase.from("categories").insert([{ name: values.name }]);
 
       if (error) {
         toast.error(error.message);
@@ -29,7 +26,7 @@ const AddCategory = ({ refresh }) => {
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      <Stack spacing={2} style={{ marginBottom: "10px" }}>
+      <Stack spacing={2} sx={{ marginBottom: 1.5 }}>
         <TextField
           fullWidth
           id="name"
@@ -39,7 +36,7 @@ const AddCategory = ({ refresh }) => {
           onChange={formik.handleChange}
         />
 
-        <Button variant="outlined" fullWidth type="submit">
+        <Button variant="contained" color="secondary" fullWidth type="submit">
           Add Category
         </Button>
       </Stack>

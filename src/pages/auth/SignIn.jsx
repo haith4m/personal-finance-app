@@ -23,10 +23,14 @@ const SignIn = () => {
   };
 
   return (
-    <>
-      <h1>Sign In</h1>
-      <AccountForm onSubmit={signIn} />
-    </>
+    <div className="auth-page">
+      <div className="auth-card">
+        <p className="auth-kicker">Member Access</p>
+        <h1>Sign In</h1>
+        <p className="auth-intro">Return to your ledger and pick up where your monthly story left off.</p>
+        <AccountForm onSubmit={signIn} />
+      </div>
+    </div>
   );
 };
 

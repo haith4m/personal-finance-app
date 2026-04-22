@@ -19,6 +19,8 @@
     "@mui/material": "^6.4.4",
     "@supabase/supabase-js": "^2.48.1",
     "formik": "^2.4.6",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "2.5.2",
