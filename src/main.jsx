@@ -17,58 +17,6 @@ import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 
 import AppBar from "./containers/AppBar";
-import AuthProvider from "./context/AuthContext.jsx";
-import { ColorModeProvider } from "./context/ThemeContext.jsx";
-import githubLogo from "/github.svg";
-import SignIn from "./pages/auth/SignIn.jsx";
-import SignUp from "./pages/auth/SignUp.jsx";
-
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <BrowserRouter> {/* ✅ MOVE TO TOP */}
-      <ColorModeProvider>
-        <AuthProvider>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh",
-            margin: "1rem",
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <AppBar />
-
-            <Routes>
-              <Route path="/" element={<App />} />
-              <Route path="/auth/sign-in" element={<SignIn />} />
-              <Route path="/auth/sign-up" element={<SignUp />} />
-              <Route path="/add-expense" element={<AddExpense />} />
-            </Routes>
-          </div>
-
-          <footer
-            style={{
-              padding: "1rem",
-              textAlign: "center",
-            }}
-          >
-            
-          </footer>
-        </div>
-
-      </AuthProvider>
-      </ColorModeProvider>
-    </BrowserRouter>
-
-    <Toaster />
 import AuthProvider from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import QuickAddModal from "./components/QuickAddModal";
@@ -211,6 +159,5 @@ function AppRoot() {
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AppRoot />
-
   </StrictMode>
 );
