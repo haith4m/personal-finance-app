@@ -93,11 +93,11 @@ function ResponsiveAppBar({ mode, onToggleTheme }) {
               width: "100%",
             }}
           >
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
               <Box
                 component={RouterLink}
                 to={session ? "/dashboard" : "/"}
-                sx={{ ...brandStyles, fontSize: 28 }}
+                sx={{ ...brandStyles, fontSize: 28, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}
               >
                 Personal Finance App
               </Box>
@@ -112,14 +112,18 @@ function ResponsiveAppBar({ mode, onToggleTheme }) {
               >
                 {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
               </IconButton>
-              <IconButton onClick={handleOpenNavMenu} sx={{ color: "text.primary", borderRadius: "999px" }}>
+              <IconButton
+                onClick={handleOpenNavMenu}
+                aria-label="Open navigation menu"
+                sx={{ color: "text.primary", borderRadius: "999px" }}
+              >
                 <MenuIcon />
               </IconButton>
             </Box>
 
             <Menu
-              anchorEl={anchorElNav?.isConnected ? anchorElNav : null}
-              open={Boolean(anchorElNav?.isConnected)}
+              anchorEl={anchorElNav}
+              open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               keepMounted
             >

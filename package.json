@@ -46,6 +46,7 @@
     "playwright": "^1.51.1",
     "typescript": "^5.7.3",
     "vite": "^6.1.0",
+    "vite-plugin-pwa": "^1.2.0",
     "vitest": "^3.0.9",
     "vitest-browser-react": "^0.1.1"
   }

@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useAuth } from "../hooks/useAuth";
 import supabase from "../utils/supabase";
+import { GoalsSkeleton } from "../components/Skeleton";
 
 export default function Goals() {
   const { user } = useAuth();
 
+  const [loading, setLoading] = useState(true);
   const [goals, setGoals] = useState([]);
   const [name, setName] = useState("");
   const [target, setTarget] = useState("");
@@ -28,6 +30,7 @@ export default function Goals() {
     } else {
       setGoals(data || []);
     }
+    setLoading(false);
   };
 
   const addGoal = async () => {
@@ -89,6 +92,8 @@ export default function Goals() {
 
   const totalSaved = goals.reduce((sum, goal) => sum + Number(goal.current_amount), 0);
   const totalTarget = goals.reduce((sum, goal) => sum + Number(goal.target_amount), 0);
+
+  if (loading) return <GoalsSkeleton />;
 
   return (
     <div className="goals-page">

@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useState } from "react";
+import { StrictMode, useEffect, useState, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { createRoot } from "react-dom/client";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
@@ -7,25 +7,28 @@ import ThemeProvider from "@mui/material/styles/ThemeProvider";
 import { Toaster } from "react-hot-toast";
 
 import "./index.css";
-import App from "./App.jsx";
-import Home from "./pages/Home";
-import Reports from "./pages/Reports";
-import Goals from "./pages/Goals";
-import Transactions from "./pages/Transactions";
-import Budgets from "./pages/Budgets";
-import SignIn from "./pages/auth/SignIn";
-import SignUp from "./pages/auth/SignUp";
+
+const App = lazy(() => import("./App.jsx"));
+const Home = lazy(() => import("./pages/Home"));
+const Reports = lazy(() => import("./pages/Reports"));
+const Goals = lazy(() => import("./pages/Goals"));
+const Transactions = lazy(() => import("./pages/Transactions"));
+const Budgets = lazy(() => import("./pages/Budgets"));
+const SignIn = lazy(() => import("./pages/auth/SignIn"));
+const SignUp = lazy(() => import("./pages/auth/SignUp"));
 
 import AppBar from "./containers/AppBar";
 import AuthProvider from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import QuickAddModal from "./components/QuickAddModal";
 import getAppTheme from "./theme";
+import { AuthSkeleton } from "./components/Skeleton";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <AuthSkeleton />;
   if (!user) return <Navigate to="/" />;
 
   return children;
@@ -59,56 +62,68 @@ function Layout({ mode, onToggleTheme }) {
       <AppBar mode={mode} onToggleTheme={onToggleTheme} />
 
       <div className="container">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/auth/sign-in" element={<SignIn />} />
-          <Route path="/auth/sign-up" element={<SignUp />} />
+        <Suspense fallback={<AuthSkeleton />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth/sign-in" element={<SignIn />} />
+            <Route path="/auth/sign-up" element={<SignUp />} />
 
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <App />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary>
+                    <App />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/reports"
-            element={
-              <ProtectedRoute>
-                <Reports />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary>
+                    <Reports />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/transactions"
-            element={
-              <ProtectedRoute>
-                <Transactions />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/transactions"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary>
+                    <Transactions />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/budgets"
-            element={
-              <ProtectedRoute>
-                <Budgets />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/budgets"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary>
+                    <Budgets />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/goals"
-            element={
-              <ProtectedRoute>
-                <Goals />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+            <Route
+              path="/goals"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary>
+                    <Goals />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Suspense>
       </div>
 
       {user && (

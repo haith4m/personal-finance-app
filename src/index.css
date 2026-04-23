@@ -350,6 +350,7 @@ p {
   background: var(--color-surface);
   color: var(--color-primary);
   padding: 10px 16px;
+  min-height: 44px;
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, color 160ms ease;
   box-shadow: 4px 4px 0 rgba(33, 27, 23, 0.12);
@@ -458,8 +459,8 @@ select:focus {
 }
 
 .delete-btn {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid transparent;
   background: transparent;
@@ -855,6 +856,30 @@ select:focus {
   }
 }
 
+/* Tablet: fill the 640–800px gap */
+@media (max-width: 760px) {
+  .nav-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reports-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .reports-header > div:last-child {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+/* Goals form: 2-col at tablet-portrait before full collapse */
+@media (max-width: 680px) {
+  .goals-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .dashboard,
   .page-container,
@@ -876,4 +901,37 @@ select:focus {
   .home-page h1 {
     font-size: clamp(3rem, 16vw, 4.5rem);
   }
+
+  .auth-page {
+    padding: 24px 16px 48px;
+  }
+
+  .auth-card {
+    padding: 20px;
+  }
+}
+
+/* Single-col nav cards on small phones */
+@media (max-width: 480px) {
+  .nav-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Text overflow protection */
+.transaction strong,
+.transaction-info strong,
+.budget-name,
+.nav-card-value,
+.budget-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.transaction p,
+.transaction-info p {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
