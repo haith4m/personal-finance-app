@@ -31,11 +31,7 @@ const AccountForm = ({ onSubmit }) => {
   });
 
   return (
-<<<<<<< HEAD
-    <form onSubmit={formik.handleSubmit}>
-=======
     <Box component="form" onSubmit={formik.handleSubmit} sx={{ display: "grid", gap: 2.25 }}>
->>>>>>> ef6a9ec (UI overhaul, reports, goals, theme consistency, validation improvements)
       <TextField
         fullWidth
         id="name"

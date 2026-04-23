@@ -5,6 +5,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useAuth } from "../hooks/useAuth";
 import supabase from "../utils/supabase";
 import toast from "react-hot-toast";
+import { PageSkeleton } from "../components/Skeleton";
 
 const getWeekBounds = (offset) => {
   const base = new Date();
@@ -26,6 +27,7 @@ const fmtDate = (date) =>
 export default function Transactions() {
   const { user } = useAuth();
 
+  const [loading, setLoading] = useState(true);
   const [allData, setAllData] = useState([]);
   const [categories, setCategories] = useState([]);
   const [view, setView] = useState("monthly");
@@ -50,6 +52,7 @@ export default function Transactions() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
     setAllData(data || []);
+    setLoading(false);
   };
 
   const fetchCategories = async () => {
@@ -118,6 +121,8 @@ export default function Transactions() {
       fetchAll();
     }
   };
+
+  if (loading) return <PageSkeleton />;
 
   const total = filteredTransactions.reduce((sum, transaction) => sum + Number(transaction.amount), 0);
   const avg = filteredTransactions.length > 0 ? total / filteredTransactions.length : 0;

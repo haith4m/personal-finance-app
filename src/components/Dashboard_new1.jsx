@@ -13,7 +13,6 @@ import { useAuth } from "../hooks/useAuth";
 import supabase from "../utils/supabase";
 import { fetchMonthlyBudgets } from "../utils/budgetSupport";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { DashboardSkeleton } from "./Skeleton";
 
 const COLORS = ["#b25539", "#48694f", "#c48a3a", "#2d5b53", "#856149"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -34,7 +33,6 @@ export default function Dashboard() {
   const [budgetData, setBudgetData] = useState([]);
   const [goals, setGoals] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [monthsCollapsed, setMonthsCollapsed] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -59,7 +57,6 @@ export default function Dashboard() {
   };
 
   const fetchData = async () => {
-    setLoading(true);
     const year = new Date().getFullYear();
     const { data } = await supabase
       .from("transactions")
@@ -90,7 +87,6 @@ export default function Dashboard() {
           spent: grouped[budget.categories.name] || 0,
         }))
     );
-    setLoading(false);
   };
 
   const fetchGoals = async () => {
@@ -122,8 +118,6 @@ export default function Dashboard() {
       fetchData();
     }
   };
-
-  if (loading) return <DashboardSkeleton />;
 
   const total = transactions.reduce((sum, transaction) => sum + Number(transaction.amount), 0);
   const overBudget = budgetData.filter((budget) => budget.spent > budget.limit).length;
@@ -166,7 +160,7 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
-        )}
+        </div>
       </div>
 
       <div className="card total-card">

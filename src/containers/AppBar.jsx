@@ -10,27 +10,13 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
-<<<<<<< HEAD
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
-import { useTheme } from "@mui/material/styles";
-import { useColorMode } from "../context/ThemeContext";
-
-=======
 import { Link as RouterLink, useLocation } from "react-router-dom";
->>>>>>> ef6a9ec (UI overhaul, reports, goals, theme consistency, validation improvements)
 import { useAuth } from "../hooks/useAuth";
 import supabase from "../utils/supabase";
 
 function ResponsiveAppBar({ mode, onToggleTheme }) {
   const { session, loading } = useAuth();
-<<<<<<< HEAD
-  const theme = useTheme();
-  const colorMode = useColorMode();
-
-=======
   const location = useLocation();
->>>>>>> ef6a9ec (UI overhaul, reports, goals, theme consistency, validation improvements)
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [scrolled, setScrolled] = useState(false);
 
@@ -90,22 +76,6 @@ function ResponsiveAppBar({ mode, onToggleTheme }) {
   };
 
   return (
-<<<<<<< HEAD
-    <AppBar position="static" color="default" elevation={1}>
-      <Container>
-        <Toolbar disableGutters>
-          <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-=======
     <AppBar
       position="sticky"
       elevation={0}
@@ -123,11 +93,11 @@ function ResponsiveAppBar({ mode, onToggleTheme }) {
               width: "100%",
             }}
           >
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
               <Box
                 component={RouterLink}
                 to={session ? "/dashboard" : "/"}
-                sx={{ ...brandStyles, fontSize: 28 }}
+                sx={{ ...brandStyles, fontSize: 28, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}
               >
                 Personal Finance App
               </Box>
@@ -142,15 +112,18 @@ function ResponsiveAppBar({ mode, onToggleTheme }) {
               >
                 {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
               </IconButton>
-              <IconButton onClick={handleOpenNavMenu} sx={{ color: "text.primary", borderRadius: "999px" }}>
+              <IconButton
+                onClick={handleOpenNavMenu}
+                aria-label="Open navigation menu"
+                sx={{ color: "text.primary", borderRadius: "999px" }}
+              >
                 <MenuIcon />
               </IconButton>
             </Box>
 
->>>>>>> ef6a9ec (UI overhaul, reports, goals, theme consistency, validation improvements)
             <Menu
-              anchorEl={anchorElNav?.isConnected ? anchorElNav : null}
-              open={Boolean(anchorElNav?.isConnected)}
+              anchorEl={anchorElNav}
+              open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               keepMounted
             >
@@ -301,13 +274,7 @@ function ResponsiveAppBar({ mode, onToggleTheme }) {
               )}
             </Box>
           </Box>
-<<<<<<< HEAD
-          <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
-            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
-=======
 
->>>>>>> ef6a9ec (UI overhaul, reports, goals, theme consistency, validation improvements)
         </Toolbar>
       </Container>
     </AppBar>

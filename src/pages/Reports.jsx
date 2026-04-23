@@ -210,15 +210,15 @@ export default function Reports() {
       }
     };
 
-    doc.setFillColor(99, 102, 241);
+    doc.setFillColor(178, 85, 57);
     doc.rect(0, 0, pageWidth, 14, "F");
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(251, 245, 234);
     doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
     doc.text("Personal Finance Report", pageWidth / 2, 9, { align: "center" });
 
     y = 24;
-    doc.setTextColor(100);
+    doc.setTextColor(109, 98, 87);
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     const periodLabel = view === "weekly" ? `Week of ${weekLabel}` : view === "custom" ? `${rangeFrom} to ${rangeTo}` : month;
@@ -227,15 +227,15 @@ export default function Reports() {
     });
 
     y += 12;
-    doc.setFillColor(245, 247, 250);
+    doc.setFillColor(230, 215, 193);
     doc.roundedRect(14, y, pageWidth - 28, 28, 3, 3, "F");
-    doc.setTextColor(0);
+    doc.setTextColor(24, 21, 18);
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.text("Summary", 20, y + 8);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(60);
+    doc.setTextColor(109, 98, 87);
     doc.text(`Total Spent: £${total.toFixed(2)}`, 20, y + 17);
     doc.text(`Transactions: ${transactions.length}`, 90, y + 17);
     doc.text(`Avg per transaction: £${avg.toFixed(2)}`, 145, y + 17);
@@ -244,12 +244,12 @@ export default function Reports() {
     checkY(20);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(0);
+    doc.setTextColor(24, 21, 18);
     doc.text("Spending by Category", 14, y);
     y += 8;
-    doc.setFillColor(99, 102, 241);
+    doc.setFillColor(24, 21, 18);
     doc.rect(14, y, pageWidth - 28, 8, "F");
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(251, 245, 234);
     doc.setFontSize(9);
     doc.text("Category", 18, y + 5.5);
     doc.text("Amount", 120, y + 5.5);
@@ -260,10 +260,10 @@ export default function Reports() {
     pieData.forEach(({ name, value }) => {
       checkY(8);
       if (alternateRow) {
-        doc.setFillColor(248, 250, 252);
+        doc.setFillColor(241, 234, 220);
         doc.rect(14, y, pageWidth - 28, 7, "F");
       }
-      doc.setTextColor(30);
+      doc.setTextColor(24, 21, 18);
       doc.setFontSize(9);
       doc.text(name, 18, y + 5);
       doc.text(`£${value.toFixed(2)}`, 120, y + 5);
@@ -276,12 +276,12 @@ export default function Reports() {
     checkY(20);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(0);
+    doc.setTextColor(24, 21, 18);
     doc.text("Transaction Details", 14, y);
     y += 8;
-    doc.setFillColor(99, 102, 241);
+    doc.setFillColor(24, 21, 18);
     doc.rect(14, y, pageWidth - 28, 8, "F");
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(251, 245, 234);
     doc.setFontSize(9);
     doc.text("Date", 18, y + 5.5);
     doc.text("Category", 52, y + 5.5);
@@ -293,10 +293,10 @@ export default function Reports() {
     transactions.forEach((transaction) => {
       checkY(8);
       if (alternateRow) {
-        doc.setFillColor(248, 250, 252);
+        doc.setFillColor(241, 234, 220);
         doc.rect(14, y, pageWidth - 28, 7, "F");
       }
-      doc.setTextColor(30);
+      doc.setTextColor(24, 21, 18);
       doc.setFontSize(8);
       doc.text(new Date(transaction.created_at).toLocaleDateString(), 18, y + 5);
       doc.text(transaction.categories?.name || "N/A", 52, y + 5);
@@ -310,7 +310,7 @@ export default function Reports() {
     for (let index = 1; index <= pages; index += 1) {
       doc.setPage(index);
       doc.setFontSize(8);
-      doc.setTextColor(150);
+      doc.setTextColor(109, 98, 87);
       doc.text(`Page ${index} of ${pages}  |  Personal Finance App`, pageWidth / 2, 290, { align: "center" });
     }
 
@@ -436,8 +436,8 @@ export default function Reports() {
         <div className="charts-grid">
           <div className="glass chart-card">
             <h3>{month.split("-")[0]} Monthly Spending</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={barData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+            <ResponsiveContainer width="100%" aspect={1.6}>
+              <BarChart data={barData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(33, 27, 23, 0.16)" />
                 <XAxis dataKey="name" stroke="#6d6257" tick={{ fill: "#6d6257", fontSize: 11 }} />
                 <YAxis stroke="#6d6257" tick={{ fill: "#6d6257", fontSize: 11 }} />
@@ -458,7 +458,7 @@ export default function Reports() {
           <div className="glass chart-card">
             <h3>Category Breakdown - {month}</h3>
             {pieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" aspect={1.4}>
                 <PieChart>
                   <Pie data={pieData} dataKey="value" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                     {pieData.map((_, index) => (
@@ -481,7 +481,7 @@ export default function Reports() {
         <div className="glass chart-card" style={{ marginTop: 25 }}>
           <h3>{view === "weekly" ? `Spending Breakdown - Week of ${weekLabel}` : `Spending Breakdown - ${rangeFrom} to ${rangeTo}`}</h3>
           {pieData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" aspect={1.4}>
               <PieChart>
                 <Pie
                   data={pieData}
@@ -509,12 +509,12 @@ export default function Reports() {
         </div>
       )}
 
-      <div className="glass table-wrapper" style={{ padding: 16, marginTop: 25 }}>
+      <div className="glass table-wrapper" style={{ padding: 16, marginTop: 25, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
         <h3 style={{ marginTop: 0 }}>Transaction Details</h3>
         {transactions.length === 0 ? (
           <p style={{ color: "var(--color-secondary)" }}>No transactions found for this period.</p>
         ) : (
-          <table className="table">
+          <table className="table" style={{ minWidth: 480 }}>
             <thead>
               <tr>
                 <th>Date</th>
