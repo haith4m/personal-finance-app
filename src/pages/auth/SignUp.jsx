@@ -14,8 +14,6 @@ const SignUp = () => {
       password,
     });
 
-    console.log("SIGNUP RESULT:", result);
-
     if (result.error) {
       toast.error(result.error.message);
       return;

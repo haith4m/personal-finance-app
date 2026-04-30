@@ -1,5 +1,4 @@
 import { useEffect, useState, memo } from "react";
-import Stack from "@mui/material/Stack";
 import supabase from "../utils/supabase";
 
 import AddCategory from "./AddCategory";

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -23,6 +23,8 @@ const getWeekBounds = (offset) => {
 };
 
 const fmtDate = (date) => date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+const getTransactionDate = (transaction) => new Date(transaction.transaction_date || transaction.created_at);
 
 const getBudgetStatus = (spent, limit) => {
   if (limit <= 0) return { tone: "green", label: "On track" };
@@ -54,27 +56,25 @@ export default function Budgets() {
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const [weekOffset, setWeekOffset] = useState(0);
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    if (user) fetchBudgetData();
-  }, [user, month, view, weekOffset]);
-
-  const fetchCategories = async () => {
-    const { data } = await supabase.from("categories").select("*");
+  const fetchCategories = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("categories")
+      .select("*")
+      .or(`user_id.eq.${user.id},is_default.eq.true`);
     setCategories(data || []);
-  };
+  }, [user]);
 
-  const fetchBudgetData = async () => {
+  const fetchBudgetData = useCallback(async () => {
+    if (!user) return;
+
     const currentPeriod = view;
     let filteredBudgets = [];
 
     if (currentPeriod === "weekly") {
       filteredBudgets = getWeeklyBudgets();
     } else {
-      const { data: budgetRows, error: budgetError } = await fetchMonthlyBudgets(supabase);
+      const { data: budgetRows, error: budgetError } = await fetchMonthlyBudgets(supabase, user.id);
       if (budgetError) {
         toast.error("Could not load budgets");
         return;
@@ -93,7 +93,7 @@ export default function Budgets() {
       currentPeriod === "weekly"
         ? getWeekBounds(weekOffset)
         : (() => {
-            const rangeStart = new Date(`${month}-01`);
+            const rangeStart = new Date(`${month || new Date().toISOString().slice(0, 7)}-01`);
             const rangeEnd = new Date(rangeStart);
             rangeEnd.setMonth(rangeEnd.getMonth() + 1);
             return { start: rangeStart, end: rangeEnd };
@@ -102,9 +102,7 @@ export default function Budgets() {
     const { data: transactions, error: transactionError } = await supabase
       .from("transactions")
       .select("amount, category_id, transaction_date, created_at")
-      .eq("user_id", user.id)
-      .gte("created_at", start.toISOString())
-      .lt("created_at", end.toISOString());
+      .eq("user_id", user.id);
 
     if (transactionError) {
       toast.error("Could not load spending");
@@ -113,12 +111,23 @@ export default function Budgets() {
 
     const spendMap = {};
     (transactions || []).forEach((transaction) => {
+      const date = getTransactionDate(transaction);
+      if (date < start || date >= end) return;
+
       if (transaction.category_id) {
         spendMap[transaction.category_id] = (spendMap[transaction.category_id] || 0) + Number(transaction.amount);
       }
     });
     setSpending(spendMap);
-  };
+  }, [month, user, view, weekOffset]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    if (user) fetchBudgetData();
+  }, [fetchBudgetData, user]);
 
   const saveBudget = async (categoryId) => {
     const amount = Number(inputAmounts[`${categoryId}:${view}`]);
@@ -148,7 +157,7 @@ export default function Budgets() {
       if (existing) {
         ({ error } = await supabase.from("budgets").update({ limit_amount: amount }).eq("id", existing.id));
       } else {
-        ({ error } = await supabase.from("budgets").insert([{ category_id: categoryId, limit_amount: amount }]));
+        ({ error } = await supabase.from("budgets").insert([{ category_id: categoryId, limit_amount: amount, user_id: user.id }]));
       }
 
       if (error) {
@@ -163,19 +172,50 @@ export default function Budgets() {
 
   const deleteBudget = async (budgetId) => {
     if (!confirm("Remove this budget limit?")) return;
+
+    const budget = savedBudgets.find((item) => item.id === budgetId);
+
     if (view === "weekly") {
-      const budget = savedBudgets.find((item) => item.id === budgetId);
       deleteWeeklyBudget(budget?.category_id);
       toast.success("Weekly budget removed");
       fetchBudgetData();
     } else {
-      const { error } = await supabase.from("budgets").delete().eq("id", budgetId);
+      const { data: deleted, error } = await supabase
+        .from("budgets")
+        .delete()
+        .eq("id", budgetId)
+        .eq("user_id", user.id)
+        .select("id");
+
       if (error) {
-        toast.error("Error deleting budget");
-      } else {
-        toast.success("Budget removed");
-        fetchBudgetData();
+        toast.error(error.message || "Error deleting budget");
+        return;
       }
+
+      if (!deleted || deleted.length === 0) {
+        toast.error("Delete blocked — run the RLS policy SQL in your Supabase project (see console).");
+        console.error(
+          "Budget delete returned 0 rows. RLS is blocking it.\n\n" +
+          "Run this in Supabase → SQL Editor:\n\n" +
+          "alter table public.budgets enable row level security;\n\n" +
+          "drop policy if exists \"BUDGETS_DELETE_OWN\" on public.budgets;\n" +
+          "create policy \"BUDGETS_DELETE_OWN\" on public.budgets\n" +
+          "  for delete using (auth.uid() = user_id);\n\n" +
+          "drop policy if exists \"BUDGETS_SELECT_OWN\" on public.budgets;\n" +
+          "create policy \"BUDGETS_SELECT_OWN\" on public.budgets\n" +
+          "  for select using (auth.uid() = user_id);\n\n" +
+          "drop policy if exists \"BUDGETS_INSERT_OWN\" on public.budgets;\n" +
+          "create policy \"BUDGETS_INSERT_OWN\" on public.budgets\n" +
+          "  for insert with check (auth.uid() = user_id);\n\n" +
+          "drop policy if exists \"BUDGETS_UPDATE_OWN\" on public.budgets;\n" +
+          "create policy \"BUDGETS_UPDATE_OWN\" on public.budgets\n" +
+          "  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);"
+        );
+        return;
+      }
+
+      toast.success("Budget removed");
+      fetchBudgetData();
     }
   };
 
@@ -219,7 +259,14 @@ export default function Budgets() {
           </div>
 
           {view === "monthly" ? (
-            <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} />
+            <input
+              id="budget-month"
+              name="budget-month"
+              type="month"
+              autoComplete="off"
+              value={month}
+              onChange={(event) => setMonth(event.target.value)}
+            />
           ) : (
             <div className="week-nav">
               <button className="btn week-nav-btn" onClick={() => setWeekOffset((value) => value - 1)}>
@@ -271,24 +318,27 @@ export default function Budgets() {
         <h3>Set {view === "weekly" ? "Weekly" : "Monthly"} Budget Limits</h3>
         <p style={{ color: "var(--color-secondary)", fontSize: 13, marginTop: 0 }}>
           {view === "weekly"
-            ? "Weekly budgets repeat every week. Enter a limit and press Save or Enter."
+            ? "Weekly budgets are stored in this browser and repeat every week. Enter a limit and press Save or Enter."
             : "Monthly budgets run across the selected month. Enter a limit and press Save or Enter."}
         </p>
-        {view === "weekly" && <p style={{ color: "var(--color-secondary)", fontSize: 13, marginTop: 0 }}>Weekly budgets are stored in this browser and repeat every week.</p>}
         {categories.length === 0 ? (
           <p style={{ color: "var(--color-secondary)" }}>Add categories below before setting budgets.</p>
         ) : (
           <div className="budget-form">
             {categories.map((category) => {
               const key = `${category.id}:${view}`;
+
               return (
                 <div key={category.id} className="budget-row">
                   <span className="budget-label">{category.name}</span>
                   <input
+                    id={`budget-amount-${category.id}-${view}`}
+                    name={`budget-amount-${category.id}-${view}`}
                     type="number"
                     min="0.01"
                     step="0.01"
-                    placeholder={budgetLimits[key] ? `Current: £${budgetLimits[key]}` : "£0.00"}
+                    autoComplete="off"
+                    placeholder={budgetLimits[key] ? `Current: £${Number(budgetLimits[key]).toFixed(2)}` : "£0.00"}
                     value={inputAmounts[key] || ""}
                     onChange={(event) => handleAmountChange(category.id, event.target.value)}
                     onKeyDown={(event) => event.key === "Enter" && saveBudget(category.id)}
@@ -316,12 +366,12 @@ export default function Budgets() {
                 <div className="budget-header">
                   <div className="budget-name-row">
                     <span className={`status-dot ${status.tone}`} aria-hidden="true" />
-                    <span className="budget-name">{budget.categories.name}</span>
+                    <span className="budget-name">{budget.categories?.name || "Uncategorised"}</span>
                     <span className="status-label">{status.label}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span className="budget-amount">
-                      £{spent.toFixed(2)} / £{budget.limit_amount}
+                      £{spent.toFixed(2)} / £{Number(budget.limit_amount).toFixed(2)}
                     </span>
                     <button className="delete-btn" onClick={() => deleteBudget(budget.id)} title="Remove budget" aria-label="Remove budget">
                       <CloseRoundedIcon fontSize="small" />

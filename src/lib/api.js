@@ -1,5 +1,10 @@
 import supabase from "../utils/supabase";
 
+const getUser = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+};
+
 // ─── CATEGORIES ───────────────────────────────────────────────────────────────
 
 export const getCategories = async () => {
@@ -9,7 +14,8 @@ export const getCategories = async () => {
 };
 
 export const addCategory = async (name) => {
-  const { error } = await supabase.from("categories").insert([{ name }]);
+  const user = await getUser();
+  const { error } = await supabase.from("categories").insert([{ name, is_default: false, user_id: user.id }]);
   if (error) throw error;
 };
 
@@ -71,10 +77,13 @@ export const getBudgets = async () => {
 };
 
 export const upsertBudget = async (categoryId, amount) => {
+  const user = await getUser();
+
   const { data: existing, error: fetchError } = await supabase
     .from("budgets")
     .select("id")
     .eq("category_id", categoryId)
+    .eq("user_id", user.id)
     .maybeSingle();
 
   if (fetchError) throw fetchError;
@@ -88,7 +97,7 @@ export const upsertBudget = async (categoryId, amount) => {
   } else {
     const { error } = await supabase
       .from("budgets")
-      .insert([{ category_id: categoryId, limit_amount: amount }]);
+      .insert([{ category_id: categoryId, limit_amount: amount, user_id: user.id }]);
     if (error) throw error;
   }
 };

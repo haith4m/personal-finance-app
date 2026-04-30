@@ -12,7 +12,23 @@ const AddCategory = ({ refresh }) => {
       name: "",
     },
     onSubmit: async (values, { resetForm }) => {
-      const { error } = await supabase.from("categories").insert([{ name: values.name }]);
+      const name = values.name.trim();
+      if (!name) {
+        toast.error("Enter a category name");
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Not logged in");
+        return;
+      }
+
+      const { error } = await supabase.from("categories").insert([{ 
+        name,
+        is_default: false,
+        user_id: user.id
+      }]);
 
       if (error) {
         toast.error(error.message);

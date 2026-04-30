@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useAuth } from "../hooks/useAuth";
 import supabase from "../utils/supabase";
@@ -14,11 +14,9 @@ export default function Goals() {
   const [deadline, setDeadline] = useState("");
   const [addAmounts, setAddAmounts] = useState({});
 
-  useEffect(() => {
-    if (user) fetchGoals();
-  }, [user]);
+  const fetchGoals = useCallback(async () => {
+    if (!user) return;
 
-  const fetchGoals = async () => {
     const { data, error } = await supabase
       .from("goals")
       .select("*")
@@ -31,10 +29,16 @@ export default function Goals() {
       setGoals(data || []);
     }
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) fetchGoals();
+  }, [fetchGoals, user]);
 
   const addGoal = async () => {
-    if (!name || !target || Number(target) <= 0) {
+    const trimmedName = name.trim();
+
+    if (!trimmedName || !target || Number(target) <= 0) {
       alert("Please enter a goal name and a valid target amount.");
       return;
     }
@@ -42,7 +46,7 @@ export default function Goals() {
     const { error } = await supabase.from("goals").insert([
       {
         user_id: user.id,
-        name,
+        name: trimmedName,
         target_amount: Number(target),
         current_amount: 0,
         deadline: deadline || null,

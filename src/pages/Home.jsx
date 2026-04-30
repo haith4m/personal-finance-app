@@ -130,7 +130,7 @@ export default function Home() {
         {/* LEFT — text */}
         <div style={{ flex: "1 1 340px", minWidth: 280 }}>
           <p className="home-kicker home-in-1" style={{ marginBottom: 14 }}>
-            Editorial Ledger Edition
+            
           </p>
 
           <h1 className="home-in-2" style={{
@@ -148,7 +148,7 @@ export default function Home() {
             maxWidth: 420,
             marginBottom: 32,
           }}>
-            Track spending, frame goals, and read your money like a well-kept household column.
+            Track spending, create goals and understand your money.
           </p>
 
           <div className="home-actions home-in-4" style={{ marginBottom: 32 }}>

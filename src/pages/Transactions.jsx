@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -24,6 +24,8 @@ const getWeekBounds = (offset) => {
 const fmtDate = (date) =>
   date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
+const getTransactionDate = (transaction) => new Date(transaction.transaction_date || transaction.created_at);
+
 export default function Transactions() {
   const { user } = useAuth();
 
@@ -38,14 +40,9 @@ export default function Transactions() {
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
-  useEffect(() => {
-    if (user) {
-      fetchAll();
-      fetchCategories();
-    }
-  }, [user]);
+  const fetchAll = useCallback(async () => {
+    if (!user) return;
 
-  const fetchAll = async () => {
     const { data } = await supabase
       .from("transactions")
       .select("id, amount, description, transaction_date, created_at, categories(name)")
@@ -53,26 +50,33 @@ export default function Transactions() {
       .order("created_at", { ascending: false });
     setAllData(data || []);
     setLoading(false);
-  };
+  }, [user]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     const { data } = await supabase.from("categories").select("*");
     setCategories(data || []);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchAll();
+      fetchCategories();
+    }
+  }, [fetchAll, fetchCategories, user]);
 
   const weekBounds = getWeekBounds(weekOffset);
 
   const filteredTransactions = (() => {
     if (view === "weekly") {
       return allData.filter((transaction) => {
-        const date = new Date(transaction.transaction_date || transaction.created_at);
+        const date = getTransactionDate(transaction);
         return date >= weekBounds.start && date <= weekBounds.end;
       });
     }
 
-    const start = new Date(`${month}-01`);
+    const start = new Date(`${month || new Date().toISOString().slice(0, 7)}-01`);
     return allData.filter((transaction) => {
-      const date = new Date(transaction.transaction_date || transaction.created_at);
+      const date = getTransactionDate(transaction);
       return date.getFullYear() === start.getFullYear() && date.getMonth() === start.getMonth();
     });
   })();
@@ -147,7 +151,7 @@ export default function Transactions() {
       </div>
 
       {view === "monthly" ? (
-        <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} style={{ alignSelf: "flex-start" }} />
+        <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} style={{ alignSelf: "flex-start", maxWidth: "220px" }} />
       ) : (
         <div className="week-nav">
           <button className="btn week-nav-btn" onClick={() => setWeekOffset((value) => value - 1)}>
@@ -236,7 +240,7 @@ export default function Transactions() {
                 <p>
                   {transaction.categories?.name || "Uncategorised"}
                   {" · "}
-                  {new Date(transaction.transaction_date || transaction.created_at).toLocaleDateString("en-GB", {
+                  {getTransactionDate(transaction).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
