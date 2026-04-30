@@ -1,7 +1,13 @@
 const WEEKLY_BUDGETS_KEY = "weekly-budgets";
 
-export async function fetchMonthlyBudgets(supabase) {
-  const result = await supabase.from("budgets").select("id, limit_amount, category_id, categories(name)");
+export async function fetchMonthlyBudgets(supabase, userId) {
+  let query = supabase.from("budgets").select("id, limit_amount, category_id, user_id, categories(name)");
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const result = await query;
 
   return {
     ...result,

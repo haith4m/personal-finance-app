@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -42,23 +42,14 @@ export default function Dashboard() {
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
-  useEffect(() => {
-    if (user) {
-      fetchData();
-      fetchGoals();
-    }
-  }, [user, selectedMonth]);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     const { data } = await supabase.from("categories").select("*");
     setCategories(data || []);
-  };
+  }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    if (!user) return;
+
     setLoading(true);
     const year = new Date().getFullYear();
     const { data } = await supabase
@@ -81,22 +72,39 @@ export default function Dashboard() {
     });
     setChartData(Object.entries(grouped).map(([name, value]) => ({ name, value })));
 
-    const { data: budgets } = await fetchMonthlyBudgets(supabase);
+    const { data: budgets } = await fetchMonthlyBudgets(supabase, user.id);
 
     setBudgetData(
-      (budgets || []).map((budget) => ({
-          name: budget.categories.name,
+      (budgets || []).map((budget) => {
+        const categoryName = budget.categories?.name || "Uncategorised";
+
+        return {
+          name: categoryName,
           limit: budget.limit_amount,
-          spent: grouped[budget.categories.name] || 0,
-        }))
+          spent: grouped[categoryName] || 0,
+        };
+      })
     );
     setLoading(false);
-  };
+  }, [selectedMonth, user]);
 
-  const fetchGoals = async () => {
+  const fetchGoals = useCallback(async () => {
+    if (!user) return;
+
     const { data } = await supabase.from("goals").select("current_amount, target_amount").eq("user_id", user.id);
     setGoals(data || []);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+      fetchGoals();
+    }
+  }, [fetchData, fetchGoals, user]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const handleQuickAdd = async () => {
     if (!amount) {
@@ -136,7 +144,7 @@ export default function Dashboard() {
         <div>
           <p className="section-kicker">Monthly edition</p>
           <h1 style={{ margin: 0 }}>Dashboard</h1>
-          <p className="page-subtitle">A quieter read of spending, budgets, and savings.</p>
+          <p className="page-subtitle">A view of spending, budgets, and savings.</p>
         </div>
       </div>
 

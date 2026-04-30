@@ -53,7 +53,7 @@ function ResponsiveAppBar({ mode, onToggleTheme }) {
     : [
         { name: "Dashboard", path: "/dashboard" },
         { name: "Transactions", path: "/transactions" },
-        { name: "Budgets", path: "/budgets" },
+        { name: "Categories & Budgets", path: "/budgets" },
         { name: "Reports", path: "/reports" },
         { name: "Goals", path: "/goals" },
       ];

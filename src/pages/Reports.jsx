@@ -38,6 +38,8 @@ const getWeekBounds = (offset) => {
 const fmtDate = (date) =>
   date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
+const getTransactionDate = (transaction) => new Date(transaction.transaction_date || transaction.created_at);
+
 export default function Reports() {
   const { user } = useAuth();
 
@@ -81,11 +83,12 @@ export default function Reports() {
       const { data } = await supabase
         .from("transactions")
         .select("*, categories(name)")
-        .eq("user_id", user.id)
-        .gte("created_at", start.toISOString())
-        .lte("created_at", end.toISOString());
+        .eq("user_id", user.id);
 
-      setTransactions(data || []);
+      setTransactions((data || []).filter((transaction) => {
+        const date = getTransactionDate(transaction);
+        return date >= start && date <= end;
+      }));
     };
 
     fetchPeriod();
@@ -118,11 +121,12 @@ export default function Reports() {
       const { data } = await supabase
         .from("transactions")
         .select("*, categories(name)")
-        .eq("user_id", user.id)
-        .gte("created_at", start.toISOString())
-        .lte("created_at", end.toISOString());
+        .eq("user_id", user.id);
 
-      setPrevTransactions(data || []);
+      setPrevTransactions((data || []).filter((transaction) => {
+        const date = getTransactionDate(transaction);
+        return date >= start && date <= end;
+      }));
     };
 
     fetchPrev();
@@ -136,12 +140,12 @@ export default function Reports() {
     const fetchYear = async () => {
       const { data } = await supabase
         .from("transactions")
-        .select("amount, created_at")
-        .eq("user_id", user.id)
-        .gte("created_at", `${year}-01-01`)
-        .lte("created_at", `${year}-12-31`);
+        .select("amount, transaction_date, created_at")
+        .eq("user_id", user.id);
 
-      setYearData(data || []);
+      setYearData(
+        (data || []).filter((transaction) => getTransactionDate(transaction).getFullYear() === Number(year))
+      );
     };
 
     if (view !== "custom") fetchYear();
@@ -165,7 +169,7 @@ export default function Reports() {
   const barData = MONTH_NAMES.map((name, index) => ({
     name,
     total: yearData
-      .filter((transaction) => new Date(transaction.created_at).getMonth() === index)
+      .filter((transaction) => getTransactionDate(transaction).getMonth() === index)
       .reduce((sum, transaction) => sum + Number(transaction.amount), 0),
     isCurrent: index === currentMonthIndex,
   }));
@@ -181,7 +185,7 @@ export default function Reports() {
 
     const headers = ["Date", "Category", "Description", "Amount (£)"];
     const rows = transactions.map((transaction) => [
-      new Date(transaction.created_at).toLocaleDateString(),
+      getTransactionDate(transaction).toLocaleDateString(),
       transaction.categories?.name || "N/A",
       `"${(transaction.description || "-").replace(/"/g, '""')}"`,
       Number(transaction.amount).toFixed(2),
@@ -298,7 +302,7 @@ export default function Reports() {
       }
       doc.setTextColor(24, 21, 18);
       doc.setFontSize(8);
-      doc.text(new Date(transaction.created_at).toLocaleDateString(), 18, y + 5);
+      doc.text(getTransactionDate(transaction).toLocaleDateString(), 18, y + 5);
       doc.text(transaction.categories?.name || "N/A", 52, y + 5);
       doc.text((transaction.description || "-").substring(0, 35), 100, y + 5);
       doc.text(`£${Number(transaction.amount).toFixed(2)}`, 168, y + 5);
@@ -526,7 +530,7 @@ export default function Reports() {
             <tbody>
               {transactions.map((transaction) => (
                 <tr key={transaction.id}>
-                  <td>{new Date(transaction.created_at).toLocaleDateString("en-GB")}</td>
+                  <td>{getTransactionDate(transaction).toLocaleDateString("en-GB")}</td>
                   <td>{transaction.categories?.name || "N/A"}</td>
                   <td>{transaction.description || "—"}</td>
                   <td>£{Number(transaction.amount).toFixed(2)}</td>

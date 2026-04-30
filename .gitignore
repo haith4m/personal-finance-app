@@ -26,3 +26,8 @@ dist-ssr
 
 # Local development
 .history
+
+# Tool artifacts
+.claude
+.dist
+scripts/
