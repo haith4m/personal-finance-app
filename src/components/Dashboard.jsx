@@ -139,12 +139,14 @@ export default function Dashboard() {
   const totalSaved = goals.reduce((sum, goal) => sum + Number(goal.current_amount), 0);
   const totalTarget = goals.reduce((sum, goal) => sum + Number(goal.target_amount), 0);
 
+  const userName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split("@")[0];
+
   return (
     <div className="dashboard">
       <div className="header">
         <div>
           <p className="section-kicker">Monthly edition</p>
-          <h1 style={{ margin: 0 }}>Dashboard</h1>
+          <h1 style={{ margin: 0 }}>Welcome back, {userName}.</h1>
           <p className="page-subtitle">A view of spending, budgets, and savings.</p>
         </div>
       </div>
