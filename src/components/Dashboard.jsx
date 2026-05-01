@@ -14,6 +14,7 @@ import supabase from "../utils/supabase";
 import { fetchMonthlyBudgets } from "../utils/budgetSupport";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { DashboardSkeleton } from "./Skeleton";
+import { parseStoredDate } from "../utils/date";
 
 const COLORS = ["#b25539", "#48694f", "#c48a3a", "#2d5b53", "#856149"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -59,7 +60,7 @@ export default function Dashboard() {
       .order("created_at", { ascending: false });
 
     const filtered = (data || []).filter((transaction) => {
-      const date = new Date(transaction.transaction_date || transaction.created_at);
+      const date = parseStoredDate(transaction.transaction_date || transaction.created_at);
       return date.getFullYear() === year && date.getMonth() === selectedMonth;
     });
 

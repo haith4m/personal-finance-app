@@ -6,6 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import supabase from "../utils/supabase";
 import toast from "react-hot-toast";
 import { PageSkeleton } from "../components/Skeleton";
+import { formatDeviceDate, formatLocalMonthInput, parseLocalMonthInput, parseStoredDate } from "../utils/date";
 
 const getWeekBounds = (offset) => {
   const base = new Date();
@@ -21,10 +22,9 @@ const getWeekBounds = (offset) => {
   return { start, end };
 };
 
-const fmtDate = (date) =>
-  date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+const fmtDate = (date) => formatDeviceDate(date, { day: "numeric", month: "short" });
 
-const getTransactionDate = (transaction) => new Date(transaction.transaction_date || transaction.created_at);
+const getTransactionDate = (transaction) => parseStoredDate(transaction.transaction_date || transaction.created_at);
 
 export default function Transactions() {
   const { user } = useAuth();
@@ -33,7 +33,7 @@ export default function Transactions() {
   const [allData, setAllData] = useState([]);
   const [categories, setCategories] = useState([]);
   const [view, setView] = useState("monthly");
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(formatLocalMonthInput());
   const [weekOffset, setWeekOffset] = useState(0);
 
   const [amount, setAmount] = useState("");
@@ -74,12 +74,22 @@ export default function Transactions() {
       });
     }
 
-    const start = new Date(`${month || new Date().toISOString().slice(0, 7)}-01`);
+    const start = parseLocalMonthInput(month);
     return allData.filter((transaction) => {
       const date = getTransactionDate(transaction);
       return date.getFullYear() === start.getFullYear() && date.getMonth() === start.getMonth();
     });
   })();
+
+  const getTransactionDateForAdd = () => {
+    const now = new Date();
+    if (view === "weekly") {
+      return weekOffset === 0 ? now : new Date(weekBounds.start);
+    }
+    const [y, m] = month.split("-").map(Number);
+    const isCurrentMonth = y === now.getFullYear() && m - 1 === now.getMonth();
+    return isCurrentMonth ? now : new Date(y, m - 1, 1);
+  };
 
   const handleAdd = async () => {
     const parsedAmount = Number(amount);
@@ -96,13 +106,22 @@ export default function Transactions() {
       return;
     }
 
+    const now = new Date();
+    if (view === "monthly") {
+      const [y, m] = month.split("-").map(Number);
+      if (y > now.getFullYear() || (y === now.getFullYear() && m - 1 > now.getMonth())) {
+        toast.error("Cannot add transactions to a future month");
+        return;
+      }
+    }
+
     const { error } = await supabase.from("transactions").insert([
       {
         user_id: user.id,
         amount: parsedAmount,
         description: description.trim(),
         category_id: categoryId || null,
-        transaction_date: new Date(),
+        transaction_date: getTransactionDateForAdd(),
       },
     ]);
 
@@ -151,7 +170,13 @@ export default function Transactions() {
       </div>
 
       {view === "monthly" ? (
-        <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} style={{ alignSelf: "flex-start", maxWidth: "220px" }} />
+        <input
+          type="month"
+          value={month}
+          max={formatLocalMonthInput()}
+          onChange={(event) => setMonth(event.target.value)}
+          style={{ alignSelf: "flex-start", maxWidth: "220px" }}
+        />
       ) : (
         <div className="week-nav">
           <button className="btn week-nav-btn" onClick={() => setWeekOffset((value) => value - 1)}>
@@ -240,7 +265,7 @@ export default function Transactions() {
                 <p>
                   {transaction.categories?.name || "Uncategorised"}
                   {" · "}
-                  {getTransactionDate(transaction).toLocaleDateString("en-GB", {
+                  {formatDeviceDate(getTransactionDate(transaction), {
                     day: "numeric",
                     month: "short",
                     year: "numeric",

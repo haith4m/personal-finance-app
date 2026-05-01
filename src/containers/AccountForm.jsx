@@ -5,8 +5,13 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
-const validationSchema = yup.object({
+const signUpSchema = yup.object({
   name: yup.string("Enter your name").required("Name is required"),
+  email: yup.string("Enter your email").email("Enter a valid email").required("Email is required"),
+  password: yup.string("Enter your password").min(8, "Password should be of minimum 8 characters length").required("Password is required"),
+});
+
+const signInSchema = yup.object({
   email: yup.string("Enter your email").email("Enter a valid email").required("Email is required"),
   password: yup.string("Enter your password").min(8, "Password should be of minimum 8 characters length").required("Password is required"),
 });
@@ -17,33 +22,41 @@ const fieldSx = {
   },
 };
 
-const AccountForm = ({ onSubmit }) => {
+const AccountForm = ({ onSubmit, mode = "signup" }) => {
+  const isSignIn = mode === "signin";
+
   const formik = useFormik({
     initialValues: {
       name: "",
       email: "",
       password: "",
     },
-    validationSchema,
+    validationSchema: isSignIn ? signInSchema : signUpSchema,
     onSubmit: async (values) => {
-      await onSubmit(values.name, values.email, values.password);
+      if (isSignIn) {
+        await onSubmit(values.email, values.password);
+      } else {
+        await onSubmit(values.name, values.email, values.password);
+      }
     },
   });
 
   return (
     <Box component="form" onSubmit={formik.handleSubmit} sx={{ display: "grid", gap: 2.25 }}>
-      <TextField
-        fullWidth
-        id="name"
-        name="name"
-        label="Name"
-        value={formik.values.name}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.name && Boolean(formik.errors.name)}
-        helperText={formik.touched.name && formik.errors.name}
-        sx={fieldSx}
-      />
+      {!isSignIn && (
+        <TextField
+          fullWidth
+          id="name"
+          name="name"
+          label="Name"
+          value={formik.values.name}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.name && Boolean(formik.errors.name)}
+          helperText={formik.touched.name && formik.errors.name}
+          sx={fieldSx}
+        />
+      )}
 
       <TextField
         fullWidth

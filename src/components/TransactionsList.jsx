@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import supabase from "../utils/supabase";
 import { getCategoryMeta } from "../utils/categoryIcons";
 import toast from "react-hot-toast";
+import { formatDeviceDate, parseStoredDate } from "../utils/date";
 
 export default function TransactionsList({ transactions = [], onRefresh }) {
   const [categories, setCategories] = useState([]);
@@ -122,7 +123,7 @@ export default function TransactionsList({ transactions = [], onRefresh }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <strong style={{ color: 'var(--text-primary)', fontSize: '15px' }}>{t.description || t.categories?.name || "Transaction"}</strong>
                 <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  {t.categories?.name || "No category"} • {t.transaction_date ? new Date(t.transaction_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : "No date"}
+                  {t.categories?.name || "No category"} • {t.transaction_date ? formatDeviceDate(parseStoredDate(t.transaction_date), { day: 'numeric', month: 'short' }) : "No date"}
                 </span>
               </div>
             </div>
