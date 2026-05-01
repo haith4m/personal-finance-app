@@ -20,7 +20,7 @@ const SignUp = () => {
   };
 
   const signUp = async (name, email, password) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { name } },
@@ -29,13 +29,22 @@ const SignUp = () => {
     if (error) {
       if (error.status === 429) {
         toast.error("Too many signup attempts. Please wait a few minutes and try again.");
+      } else if (error.message?.toLowerCase().includes("already registered") || error.message?.toLowerCase().includes("already exists")) {
+        toast.error("An account with this email already exists. Please sign in instead.");
       } else {
         toast.error(error.message);
       }
       return;
     }
 
-    toast.success("Account created! Check your email and click the confirmation link before signing in.", { duration: 6000 });
+    // When email confirmation is enabled, Supabase silently "succeeds" for existing emails
+    // but returns an empty identities array instead of an error.
+    if (data.user?.identities?.length === 0) {
+      toast.error("An account with this email already exists. Please sign in instead.");
+      return;
+    }
+
+    toast.success("Account created! You can now sign in.");
     navigate("/auth/sign-in");
   };
 
