@@ -1,20 +1,21 @@
-import { useEffect, useState, memo } from "react";
+import { useCallback, useEffect, useState, memo } from "react";
 import supabase from "../utils/supabase";
 
 import AddCategory from "./AddCategory";
 import CategoryItem from "./CategoryItem";
 
-const CategoriesList = () => {
+const CategoriesList = ({ refresh }) => {
   const [categories, setCategories] = useState([]);
+
+  const getCategories = useCallback(async () => {
+    const { data } = await supabase.from("categories").select("*");
+    setCategories(data || []);
+    refresh?.();
+  }, [refresh]);
 
   useEffect(() => {
     getCategories();
-  }, []);
-
-  const getCategories = async () => {
-    const { data } = await supabase.from("categories").select("*");
-    setCategories(data || []);
-  };
+  }, [getCategories]);
 
   return (
   <div className="categories-container">

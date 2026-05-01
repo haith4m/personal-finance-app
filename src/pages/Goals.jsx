@@ -3,6 +3,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useAuth } from "../hooks/useAuth";
 import supabase from "../utils/supabase";
 import { GoalsSkeleton } from "../components/Skeleton";
+import { parseLocalDateInput, startOfLocalDay } from "../utils/date";
 
 export default function Goals() {
   const { user } = useAuth();
@@ -136,7 +137,7 @@ export default function Goals() {
             if (percent >= 100) barColor = "#48694f";
 
             const daysLeft = goal.deadline
-              ? Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24))
+              ? Math.ceil((parseLocalDateInput(goal.deadline) - startOfLocalDay()) / (1000 * 60 * 60 * 24))
               : null;
 
             return (

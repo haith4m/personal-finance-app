@@ -2,6 +2,9 @@ import { memo } from "react";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
 
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+
 import AccountForm from "../../containers/AccountForm";
 import supabase from "../../utils/supabase";
 
@@ -88,6 +91,14 @@ function AnimatedLogo() {
 const SignIn = () => {
   const navigate = useNavigate();
 
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
+    if (error) toast.error(error.message);
+  };
+
   const signIn = async (email, password) => {
     const result = await supabase.auth.signInWithPassword({
       email,
@@ -97,7 +108,9 @@ const SignIn = () => {
     if (!result.error) {
       navigate("/");
       toast.success("Welcome!");
-    } else if (result.error?.message) {
+    } else if (result.error?.status === 400 || result.error?.message?.toLowerCase().includes("not confirmed")) {
+      toast.error("Email not confirmed. Check your inbox and click the verification link before signing in.");
+    } else {
       toast.error(result.error.message);
     }
   };
@@ -109,7 +122,16 @@ const SignIn = () => {
         <p className="auth-kicker">Member Access</p>
         <h1>Sign In</h1>
         <p className="auth-intro">Return to your ledger and pick up where your monthly story left off.</p>
-        <AccountForm onSubmit={signIn} />
+        <AccountForm onSubmit={signIn} mode="signin" />
+        <Divider sx={{ my: 2 }}>or</Divider>
+        <Button
+          variant="outlined"
+          fullWidth
+          onClick={handleGoogleLogin}
+          startIcon={<img src="https://www.google.com/favicon.ico" width={16} alt="" />}
+        >
+          Continue with Google
+        </Button>
       </div>
     </div>
   );

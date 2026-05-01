@@ -1,4 +1,5 @@
 import supabase from "../utils/supabase";
+import { parseLocalDateInput } from "../utils/date";
 
 const getUser = async () => {
   const { data: { user } } = await supabase.auth.getUser();
@@ -42,7 +43,7 @@ export const addTransaction = async ({ userId, amount, description, categoryId, 
       amount: Number(amount),
       description,
       category_id: categoryId,
-      transaction_date: new Date(date).toISOString(),
+      transaction_date: parseLocalDateInput(date) || new Date(date),
     },
   ]);
   if (error) throw error;

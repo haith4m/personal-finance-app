@@ -7,6 +7,7 @@ import supabase from "../utils/supabase";
 import { deleteWeeklyBudget, fetchMonthlyBudgets, getWeeklyBudgets, saveWeeklyBudget } from "../utils/budgetSupport";
 import CategoriesList from "../components/CategoriesList";
 import toast from "react-hot-toast";
+import { formatDeviceDate, formatLocalMonthInput, parseLocalMonthInput, parseStoredDate } from "../utils/date";
 
 const getWeekBounds = (offset) => {
   const base = new Date();
@@ -22,9 +23,9 @@ const getWeekBounds = (offset) => {
   return { start, end };
 };
 
-const fmtDate = (date) => date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+const fmtDate = (date) => formatDeviceDate(date, { day: "numeric", month: "short" });
 
-const getTransactionDate = (transaction) => new Date(transaction.transaction_date || transaction.created_at);
+const getTransactionDate = (transaction) => parseStoredDate(transaction.transaction_date || transaction.created_at);
 
 const getBudgetStatus = (spent, limit) => {
   if (limit <= 0) return { tone: "green", label: "On track" };
@@ -53,7 +54,7 @@ export default function Budgets() {
   const [savedBudgets, setSavedBudgets] = useState([]);
   const [inputAmounts, setInputAmounts] = useState({});
   const [view, setView] = useState("monthly");
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(formatLocalMonthInput());
   const [weekOffset, setWeekOffset] = useState(0);
 
   const fetchCategories = useCallback(async () => {
@@ -93,7 +94,7 @@ export default function Budgets() {
       currentPeriod === "weekly"
         ? getWeekBounds(weekOffset)
         : (() => {
-            const rangeStart = new Date(`${month || new Date().toISOString().slice(0, 7)}-01`);
+            const rangeStart = parseLocalMonthInput(month);
             const rangeEnd = new Date(rangeStart);
             rangeEnd.setMonth(rangeEnd.getMonth() + 1);
             return { start: rangeStart, end: rangeEnd };
